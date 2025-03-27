@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 
 const stores = [
   {
@@ -126,12 +127,12 @@ export default function HomePage() {
 
       {/* 입점 시작하기 버튼 */}
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white border-t">
-        <button
-          onClick={() => router.push('/store/register')}
-          className="w-full py-3 bg-[#FF7355] text-white rounded-lg font-medium hover:bg-[#FF6344] transition-colors"
+        <Link
+          href="/store-register"
+          className="block w-full bg-[#FF7355] text-white px-8 py-4 rounded-lg font-medium hover:bg-[#FF6344] transition-colors text-center"
         >
           입점 시작하기
-        </button>
+        </Link>
       </div>
 
     </div>

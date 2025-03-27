@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { HiMenu, HiX } from 'react-icons/hi';
 
@@ -11,6 +11,7 @@ export default function StoreLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // 모바일에서 메뉴 열었을 때 스크롤 방지
@@ -37,6 +38,11 @@ export default function StoreLayout({
       return pathname === href;
     }
     return pathname.startsWith(href);
+  };
+
+  const handleLogout = () => {
+    // 로그아웃 로직 구현 필요
+    router.push('/');
   };
 
   return (
@@ -84,17 +90,17 @@ export default function StoreLayout({
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
           <div className="space-y-2">
             <Link
-              href="/store/login"
+              href="/store/customer-service"
               className="block w-full px-4 py-2 text-center text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
             >
-              로그인
+              고객센터
             </Link>
-            <Link
-              href="/store/register"
-              className="block w-full px-4 py-2 text-center bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
+            <button
+              onClick={handleLogout}
+              className="block w-full px-4 py-2 text-center text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
             >
-              입점 시작하기
-            </Link>
+              로그아웃
+            </button>
           </div>
         </div>
       </div>

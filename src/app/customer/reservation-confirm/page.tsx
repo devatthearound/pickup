@@ -3,6 +3,14 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
+interface UserInfo {
+  userId: string;
+  name: string;
+  phone: string;
+  marketingAgreed: boolean;
+  createdAt: string;
+}
+
 interface CartItem {
   id: string;
   name: string;
@@ -13,6 +21,7 @@ interface CartItem {
 export default function ReservationConfirmPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   
   const date = searchParams.get('date');
@@ -39,12 +48,20 @@ export default function ReservationConfirmPage() {
   // 총 금액 계산
   const totalAmount = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+  useEffect(() => {
+    // localStorage에서 사용자 정보 가져오기
+    const storedUserInfo = localStorage.getItem('userInfo');
+    if (storedUserInfo) {
+      setUserInfo(JSON.parse(storedUserInfo));
+    }
+  }, []);
+
   const handleConfirm = () => {
-    router.push('/customer/reservation-success');
+    router.push(`/customer/personal-info?date=${date}&time=${time}`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 max-w-md mx-auto pb-20">
+    <div className="min-h-screen bg-gray-50 max-w-md mx-auto pb-[140px]">
       {/* 헤더 */}
       <div className="bg-[#FF7355] px-4 py-4 flex items-center relative">
         <button 
@@ -132,7 +149,7 @@ export default function ReservationConfirmPage() {
       </div>
 
       {/* 예약 확정 버튼 */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white border-t">
+      <div className="fixed bottom-[72px] left-0 right-0 max-w-md mx-auto p-4 bg-white border-t">
         <button
           onClick={handleConfirm}
           className="w-full py-4 bg-[#FF7355] text-white rounded-lg font-medium hover:bg-[#FF6344] transition-colors"

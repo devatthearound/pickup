@@ -61,24 +61,19 @@ export default function CartPage() {
       </div>
 
       {/* 픽업 혜택 배너 */}
-      <div className="bg-[#FF7355] mx-4 mt-4 rounded-xl p-4">
-        <div className="flex items-center mb-2">
-          <svg className="w-6 h-6 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4m8-8v16" />
-          </svg>
-          <h2 className="text-white font-medium">픽업 시 혜택</h2>
-        </div>
-        <ul className="text-white text-sm space-y-1.5">
+      <div className="bg-pink-50 p-4 mb-4">
+        <h2 className="text-lg font-bold mb-3 text-pink-700">🎁 픽업 시 혜택</h2>
+        <ul className="space-y-2 text-pink-600">
           <li className="flex items-center">
-            <span className="w-1 h-1 bg-white rounded-full mr-2"></span>
+            <span className="mr-2">🍩</span>
             도넛 1개 추가 증정 (15,000원 이상)
           </li>
           <li className="flex items-center">
-            <span className="w-1 h-1 bg-white rounded-full mr-2"></span>
+            <span className="mr-2">🥤</span>
             음료 사이즈업 무료
           </li>
           <li className="flex items-center">
-            <span className="w-1 h-1 bg-white rounded-full mr-2"></span>
+            <span className="mr-2">📦</span>
             포장 박스 무료 제공
           </li>
         </ul>
@@ -136,19 +131,17 @@ export default function CartPage() {
         </button>
       </div>
 
-      {/* 결제 정보 */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t p-4">
-        <div className="space-y-2 mb-4">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-500">총 주문금액</span>
-            <span className="font-medium text-lg">{totalAmount.toLocaleString()}원</span>
-          </div>
+      {/* 결제하기 버튼 */}
+      <div className="fixed bottom-[72px] left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 bg-white pb-4 border-t">
+        <div className="flex justify-between items-center py-4">
+          <span className="text-lg font-medium">총 결제금액</span>
+          <span className="text-xl font-bold text-[#FF7355]">{totalAmount.toLocaleString()}원</span>
         </div>
         <button
           onClick={() => router.push('/customer/pickup-time')}
-          className="w-full py-4 bg-[#FF7355] text-white rounded-lg font-medium hover:bg-[#FF6344] transition-colors"
+          className="w-full py-4 bg-[#FF7355] text-white rounded-lg font-medium text-lg hover:bg-[#FF6344] transition-colors"
         >
-          픽업 시간 선택
+          픽업 시간 예약하기
         </button>
       </div>
     </div>

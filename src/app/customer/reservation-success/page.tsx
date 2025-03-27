@@ -34,12 +34,14 @@ export default function ReservationSuccessPage() {
             예약 확정 정보를 카카오톡으로 발송해드렸습니다
           </p>
         </div>
-        <button
-          onClick={() => router.push('/customer')}
-          className="w-full py-4 bg-[#FF7355] text-white rounded-lg font-medium hover:bg-[#FF6344] transition-colors"
-        >
-          홈으로 돌아가기
-        </button>
+        <div className="p-8">
+          <button
+            onClick={() => router.push('/customer/orders')}
+            className="w-full py-4 px-8 bg-[#FF7355] text-white rounded-lg font-medium hover:bg-[#FF6344]"
+          >
+            주문내역으로 가기
+          </button>
+        </div>
       </div>
     </div>
   );

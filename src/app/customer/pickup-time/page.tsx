@@ -33,7 +33,7 @@ export default function PickupTimePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 max-w-md mx-auto pb-20">
+    <div className="min-h-screen bg-gray-50 max-w-md mx-auto pb-[140px]">
       {/* 헤더 */}
       <div className="bg-[#FF7355] px-4 py-4 flex items-center relative">
         <button 
@@ -88,7 +88,7 @@ export default function PickupTimePage() {
       </div>
 
       {/* 하단 고정 영역 */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t">
+      <div className="fixed bottom-[72px] left-0 right-0 max-w-md mx-auto bg-white border-t">
         {/* 선택된 시간 표시 */}
         {(selectedDate || selectedTime) && (
           <div className="px-4 pt-4">

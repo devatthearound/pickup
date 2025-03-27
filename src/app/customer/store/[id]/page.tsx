@@ -36,7 +36,7 @@ export default function StorePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-50 pb-24 max-w-md mx-auto">
+    <div className="max-w-md mx-auto pb-[140px]">
       {/* 매장 로고 및 정보 */}
       <div className="bg-white w-full px-4 py-8 text-center">
         <div className="flex justify-center mb-6">
@@ -109,7 +109,7 @@ export default function StorePage() {
       </div>
 
       {/* 픽업 예약 버튼 */}
-      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4">
+      <div className="fixed bottom-[72px] left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 bg-white pb-4">
         <button 
           onClick={() => router.push('/customer/cart')}
           className="w-full py-4 bg-[#FF7355] text-white rounded-lg font-medium shadow-lg text-lg hover:bg-[#FF6344] transition-colors"
@@ -120,7 +120,7 @@ export default function StorePage() {
 
       {/* 알림 팝업 */}
       {showPopup && (
-        <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg">
+        <div className="fixed bottom-[140px] left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-lg">
           픽업 예약 목록에 추가되었습니다
         </div>
       )}
