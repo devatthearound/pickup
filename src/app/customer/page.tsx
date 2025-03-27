@@ -3,54 +3,37 @@
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import StoreCard from '@/components/StoreCard';
+import { useStoreProfile } from '@/store/useStoreProfile';
+import StoreProfileImage from '@/components/StoreProfileImage';
 
 const stores = [
   {
     id: 1,
-    name: '달콤한 베이커리',
-    category: '빵, 케이크, 디저트',
+    name: '도넛캠프',
+    category: '도넛, 커피, 음료',
     rating: 4.8,
     reviewCount: 162,
     address: '서울시 마포구 연남로 123길 34',
-    image: '/images/bread.jpg',
+    image: '/images/donutcamp-logo.jpg',
     isOpen: true,
     minOrderTime: 30
-  },
-  {
-    id: 2,
-    name: '신선한 과일가게',
-    category: '과일, 채소',
-    rating: 4.9,
-    reviewCount: 89,
-    address: '서울시 마포구 연남로 123길 35',
-    image: '/images/fruit.jpg',
-    isOpen: true,
-    minOrderTime: 20
-  },
-  {
-    id: 3,
-    name: '맛있는 커피',
-    category: '커피, 음료',
-    rating: 4.7,
-    reviewCount: 234,
-    address: '서울시 마포구 연남로 123길 36',
-    image: '/images/coffee.jpg',
-    isOpen: true,
-    minOrderTime: 15
   }
 ];
 
 export default function HomePage() {
-  const router = useRouter();
+  const { imageUrl } = useStoreProfile();
 
   return (
     <div className="flex flex-col min-h-full bg-gray-50 max-w-md mx-auto pb-20">
       {/* 로고 및 소개 */}
       <div className="bg-white w-full px-4 py-12 text-center">
         <div className="flex justify-center mb-6">
-          <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-[#FF7355]">
-            <span className="absolute inset-0 flex items-center justify-center text-white text-4xl font-bold">P</span>
-          </div>
+          <StoreProfileImage
+            name="PICKUP"
+            imageUrl={imageUrl || undefined}
+            size="lg"
+          />
         </div>
         <h1 className="text-2xl font-bold mb-2">PICKUP</h1>
         <p className="text-gray-600">소상공인을 위한 픽업 예약 서비스</p>
@@ -101,26 +84,34 @@ export default function HomePage() {
         <div className="bg-white rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-4">입점 매장</h2>
           <div className="space-y-4">
-            <button 
-              onClick={() => router.push('/customer/store/1')}
-              className="w-full p-4 bg-gray-50 rounded-xl flex items-center gap-4 hover:bg-gray-100"
-            >
-              <div className="relative w-16 h-16 rounded-lg overflow-hidden">
-                <Image
-                  src="/images/donutcamp-logo.jpg"
-                  alt="도넛캠프"
-                  layout="fill"
-                  objectFit="cover"
-                />
-              </div>
-              <div className="flex-1 text-left">
-                <h3 className="font-medium">도넛캠프</h3>
-                <p className="text-sm text-gray-600">매일 구워내는 따뜻한 도넛</p>
-              </div>
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
+            {stores.map(store => (
+              <Link 
+                key={store.id}
+                href={`/customer/store/${store.id}`}
+                className="block w-full p-4 bg-gray-50 rounded-xl flex items-center gap-4 hover:bg-gray-100"
+              >
+                <div className="relative w-16 h-16 rounded-lg overflow-hidden">
+                  <StoreProfileImage
+                    name={store.name}
+                    imageUrl={store.image || undefined}
+                    size="md"
+                  />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-medium">{store.name}</h3>
+                    <div className="flex items-center text-sm text-gray-600">
+                      <svg className="w-4 h-4 text-yellow-400 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                      {store.rating}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600">{store.category}</p>
+                  <p className="text-sm text-gray-500 mt-1">{store.address}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </div>
@@ -134,7 +125,6 @@ export default function HomePage() {
           입점 시작하기
         </Link>
       </div>
-
     </div>
   );
 } 

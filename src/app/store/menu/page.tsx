@@ -1,35 +1,76 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
+import Image from 'next/image';
 
 interface MenuItem {
   id: string;
   name: string;
   price: number;
   description: string;
+  imageUrl: string | null;
 }
 
 export default function MenuPage() {
   const router = useRouter();
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([
+    {
+      id: '1',
+      name: '도넛',
+      description: '달콤한 도넛',
+      price: 3000,
+      imageUrl: null
+    },
+    {
+      id: '2',
+      name: '커피',
+      description: '신선한 원두로 내린 커피',
+      price: 4000,
+      imageUrl: null
+    }
+  ]);
   const [newMenuItem, setNewMenuItem] = useState<MenuItem>({
     id: '',
     name: '',
     price: 0,
     description: '',
+    imageUrl: null
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   const addMenuItem = () => {
     if (newMenuItem.name && newMenuItem.price) {
       setMenuItems([...menuItems, { ...newMenuItem, id: Date.now().toString() }]);
-      setNewMenuItem({ id: '', name: '', price: 0, description: '' });
+      setNewMenuItem({ id: '', name: '', price: 0, description: '', imageUrl: null });
     }
   };
 
   const handleSave = () => {
     console.log({ menuItems });
     router.push('/store');
+  };
+
+  const handleImageClick = (id: string) => {
+    setSelectedItemId(id);
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && selectedItemId) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMenuItems(prevItems =>
+          prevItems.map(item =>
+            item.id === selectedItemId ? { ...item, imageUrl: reader.result as string } : item
+          )
+        );
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -93,26 +134,28 @@ export default function MenuPage() {
               </div>
             ) : (
               menuItems.map((item) => (
-                <div key={item.id} className="bg-white p-4 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-medium">{item.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">{item.description}</p>
-                    </div>
-                    <div className="text-[#FF7355] font-medium">
-                      {item.price.toLocaleString()}원
-                    </div>
+                <div key={item.id} className="flex items-center gap-4">
+                  <div 
+                    className="relative w-24 h-24 rounded-lg overflow-hidden cursor-pointer bg-gray-100"
+                    onClick={() => handleImageClick(item.id)}
+                  >
+                    {item.imageUrl ? (
+                      <Image
+                        src={item.imageUrl}
+                        alt={item.name}
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="flex items-center justify-center h-full text-gray-400">
+                        이미지 추가
+                      </div>
+                    )}
                   </div>
-                  <div className="mt-4 flex justify-end space-x-2">
-                    <button
-                      onClick={() => {
-                        const updatedItems = menuItems.filter(menuItem => menuItem.id !== item.id);
-                        setMenuItems(updatedItems);
-                      }}
-                      className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      삭제
-                    </button>
+                  <div className="flex-1">
+                    <h3 className="font-medium text-lg">{item.name}</h3>
+                    <p className="text-sm text-gray-600">{item.description}</p>
+                    <p className="text-sm text-gray-500">₩{item.price.toLocaleString()}</p>
                   </div>
                 </div>
               ))
@@ -130,6 +173,14 @@ export default function MenuPage() {
           저장하기
         </button>
       </div>
+
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageChange}
+        accept="image/*"
+        className="hidden"
+      />
     </div>
   );
 } 

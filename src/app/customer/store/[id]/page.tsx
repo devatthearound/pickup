@@ -4,6 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Image from 'next/image';
+import { useStoreProfile } from '@/store/useStoreProfile';
+import StoreProfileImage from '@/components/StoreProfileImage';
 
 interface CartItem {
   name: string;
@@ -15,6 +17,7 @@ export default function StorePage() {
   const router = useRouter();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [showPopup, setShowPopup] = useState(false);
+  const { imageUrl } = useStoreProfile();
 
   const addToCart = (name: string, price: number) => {
     setCartItems(prev => {
@@ -36,23 +39,23 @@ export default function StorePage() {
   };
 
   return (
-    <div className="max-w-md mx-auto pb-[140px]">
-      {/* 매장 로고 및 정보 */}
-      <div className="bg-white w-full px-4 py-8 text-center">
-        <div className="flex justify-center mb-6">
-          <div className="relative w-24 h-24 rounded-full overflow-hidden">
-            <Image
-              src="/images/donutcamp-logo.jpg"
-              alt="도넛캠프"
-              layout="fill"
-              objectFit="cover"
-            />
-          </div>
-        </div>
-        <h1 className="text-2xl font-bold mb-2">도넛캠프</h1>
-        <p className="text-gray-600 mb-1">매일 구워내는 따뜻한 도넛</p>
+    <div className="max-w-md mx-auto p-6">
+      {/* <h1 className="text-2xl font-bold mb-8">스토어 정보</h1> */}
+
+
+
+      <div className="flex justify-center mb-8">
+        <StoreProfileImage
+          name="도넛캠프"
+          imageUrl={imageUrl || undefined}
+          size="lg"
+        />
+      </div>
+
+      <div className="text-center mb-8">
+        <h2 className="text-xl font-medium">도넛캠프</h2>
+        <p className="text-sm text-gray-600">매일 구워내는 따뜻한 도넛</p>
         <p className="text-sm text-gray-500">서울시 마포구 연남로 123길 34</p>
-        <p className="text-sm text-gray-500">영업시간: 10:00-20:00</p>
       </div>
 
       {/* 메뉴 카테고리 */}
@@ -95,7 +98,7 @@ export default function StorePage() {
       {/* 매장 소개 */}
       <div className="px-4 py-6">
         <div className="bg-white rounded-2xl p-6">
-          <h2 className="text-xl font-bold mb-4">About 도넛캠프</h2>
+          <h2 className="text-xl font-bold mb-4">소개글</h2>
           <p className="text-gray-600 mb-4">
             도넛캠프는 매일 아침 신선한 재료로 정성스럽게 만드는 수제 도넛 전문점입니다.
             클래식한 도넛부터 시즌 한정 도넛까지, 다양한 맛을 경험해보세요.
