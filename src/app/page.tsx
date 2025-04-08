@@ -25,7 +25,7 @@ export default function Home() {
         </a>
 
         {/* 사장님용 카드 */}
-        <a href="/store" className="group">
+        <a href="/bizes" className="group">
           <div className="bg-white rounded-2xl shadow-lg p-8 transition-all duration-200 hover:shadow-xl hover:scale-105">
             <div className="aspect-square rounded-xl bg-coral-50 flex items-center justify-center mb-6">
               <svg className="w-24 h-24 text-coral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

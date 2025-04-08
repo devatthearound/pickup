@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { HiMenu, HiX } from 'react-icons/hi';
 
@@ -13,7 +13,7 @@ export default function StoreLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
+  const { storeId } = useParams();
   // 모바일에서 메뉴 열었을 때 스크롤 방지
   useEffect(() => {
     if (isMenuOpen) {
@@ -27,10 +27,10 @@ export default function StoreLayout({
   }, [isMenuOpen]);
 
   const menuItems = [
-    { href: '/store', label: '대시보드', exact: true },
-    { href: '/store/menu', label: '메뉴 관리' },
-    { href: '/store/benefits', label: '혜택 관리' },
-    { href: '/store/setup/1', label: '매장 설정' },
+    { href: '/bizes', label: '대시보드', exact: true },
+    { href: `/bizes/store/${storeId}/manage/menu`, label: '메뉴 관리' },
+    { href: `/bizes/store/${storeId}/manage/benefits`, label: '혜택 관리' },
+    { href: `/bizes/store/${storeId}/manage/setup`, label: '매장 설정' },
   ];
 
   const isActive = (href: string, exact = false) => {
