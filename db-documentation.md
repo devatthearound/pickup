@@ -264,8 +264,10 @@
 |-------|------|------|
 | id | 고유 식별자 | 자동 증가 |
 | order_number | 주문 번호 | 고객에게 표시되는 번호 |
-| customer_id | 고객 ID | customer_profiles 테이블 참조 |
+| customer_id | 고객 ID | customer_profiles 테이블 참조, 비회원 주문의 경우 null |
 | store_id | 상점 ID | stores 테이블 참조 |
+| customer_name | 고객 이름 | 비회원 주문 시 필수 |
+| customer_phone | 고객 전화번호 | 비회원 주문 시 필수 |
 | status | 주문 상태 | 'pending', 'accepted', 'rejected', 'preparing', 'ready', 'completed', 'canceled' |
 | total_amount | 총 주문 금액 | |
 | discount_amount | 할인 금액 | |
@@ -276,6 +278,10 @@
 | actual_pickup_time | 실제 픽업 시간 | |
 | customer_note | 고객 요청사항 | |
 | rejection_reason | 주문 거부 이유 | |
+| is_guest_order | 비회원 주문 여부 | 기본값: false |
+| created_at | 생성 시간 | |
+| updated_at | 수정 시간 | |
+| deleted_at | 삭제 시간 | 소프트 삭제 사용 |
 
 ### 4.2. 주문 항목 (order_items)
 주문에 포함된 메뉴 항목을 저장합니다.

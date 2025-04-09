@@ -7,19 +7,19 @@ import StoreCard from '@/components/StoreCard';
 import { useStoreProfile } from '@/store/useStoreProfile';
 import StoreProfileImage from '@/components/StoreProfileImage';
 
-const stores = [
-  {
-    id: 1,
-    name: '도넛캠프',
-    category: '도넛, 커피, 음료',
-    rating: 4.8,
-    reviewCount: 162,
-    address: '서울시 마포구 연남로 123길 34',
-    image: '/images/donutcamp-logo.jpg',
-    isOpen: true,
-    minOrderTime: 30
-  }
-];
+// const stores = [
+//   {
+//     id: 1,
+//     name: '도넛캠프',
+//     category: '도넛, 커피, 음료',
+//     rating: 4.8,
+//     reviewCount: 162,
+//     address: '서울시 마포구 연남로 123길 34',
+//     image: '/images/donutcamp-logo.jpg',
+//     isOpen: true,
+//     minOrderTime: 30
+//   }
+// ];
 
 export default function HomePage() {
   const { imageUrl } = useStoreProfile();
@@ -81,7 +81,7 @@ export default function HomePage() {
         </div>
 
         {/* 입점 매장 */}
-        <div className="bg-white rounded-2xl p-6">
+        {/* <div className="bg-white rounded-2xl p-6">
           <h2 className="text-xl font-bold mb-4">입점 매장</h2>
           <div className="space-y-4">
             {stores.map(store => (
@@ -113,13 +113,13 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* 입점 시작하기 버튼 */}
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white border-t">
         <Link
-          href="/store-register"
+          href="/bizes"
           className="block w-full bg-[#FF7355] text-white px-8 py-4 rounded-lg font-medium hover:bg-[#FF6344] transition-colors text-center"
         >
           입점 시작하기

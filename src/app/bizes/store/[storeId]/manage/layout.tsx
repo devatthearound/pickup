@@ -90,7 +90,7 @@ export default function StoreLayout({
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
           <div className="space-y-2">
             <Link
-              href="/store/customer-service"
+              href="/customer-service"
               className="block w-full px-4 py-2 text-center text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
             >
               고객센터

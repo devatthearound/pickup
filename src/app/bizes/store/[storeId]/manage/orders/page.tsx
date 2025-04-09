@@ -1,170 +1,201 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-
-interface OrderItem {
-  name: string;
-  quantity: number;
-  options?: string[];
-}
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 
 interface Order {
-  id: string;
-  customerName: string;
-  pickupTime: string;
-  items: OrderItem[];
+  id: number;
+  orderNumber: string;
+  status: string;
   totalAmount: number;
-  status: 'pending' | 'preparing' | 'ready' | 'completed';
+  customerName: string;
+  customerPhone: string;
+  pickupTime: string;
   createdAt: string;
 }
 
-export default function OrdersPage() {
-  const router = useRouter();
-  const [activeTab, setActiveTab] = useState<Order['status']>('pending');
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: 'ORD001',
-      customerName: '김민지',
-      pickupTime: '오후 3:30',
-      items: [
-        { name: '플레인 도넛', quantity: 2 },
-        { name: '초코 도넛', quantity: 1, options: ['초콜릿 추가'] },
-      ],
-      totalAmount: 15000,
-      status: 'pending',
-      createdAt: '14:20',
-    },
-    {
-      id: 'ORD002',
-      customerName: '이하늘',
-      pickupTime: '오후 4:00',
-      items: [
-        { name: '딸기 도넛', quantity: 3 },
-        { name: '아메리카노', quantity: 1, options: ['ICE'] },
-      ],
-      totalAmount: 22000,
-      status: 'preparing',
-      createdAt: '14:35',
-    },
-  ]);
+export default function StoreOrdersPage() {
+  const params = useParams();
+  const storeId = params.storeId;
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<string>('all');
 
-  const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    setOrders(orders.map(order => 
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/orders`);
+      if (!response.ok) {
+        throw new Error('주문 목록을 불러오는데 실패했습니다.');
+      }
+      const result = await response.json();
+      if (!result.success || !result.data) {
+        throw new Error('주문 데이터가 올바르지 않습니다.');
+      }
+      setOrders(result.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const filteredOrders = orders.filter(order => order.status === activeTab);
-  
-  const getStatusCount = (status: Order['status']) => {
-    return orders.filter(order => order.status === status).length;
+  useEffect(() => {
+    if (storeId) {
+      fetchOrders();
+      // 30초마다 주문 목록 갱신
+      const interval = setInterval(fetchOrders, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [storeId]);
+
+  const filteredOrders = orders.filter(order => {
+    if (filter === 'all') return true;
+    return order.status === filter;
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'accepted':
+        return 'bg-blue-100 text-blue-800';
+      case 'preparing':
+        return 'bg-purple-100 text-purple-800';
+      case 'ready':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
-  const getNextStatus = (currentStatus: Order['status']): Order['status'] | null => {
-    const statusFlow = {
-      pending: 'preparing',
-      preparing: 'ready',
-      ready: 'completed',
-      completed: null,
-    };
-    return statusFlow[currentStatus] as Order['status'] | null;
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return '주문 대기';
+      case 'accepted':
+        return '주문 수락';
+      case 'preparing':
+        return '준비 중';
+      case 'ready':
+        return '준비 완료';
+      case 'rejected':
+        return '주문 거절';
+      default:
+        return '완료';
+    }
   };
 
-  const getStatusText = (status: Order['status']) => {
-    const statusMap = {
-      pending: '접수대기',
-      preparing: '준비중',
-      ready: '준비완료',
-      completed: '완료',
-    };
-    return statusMap[status];
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF7355]"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6">
+        <p className="text-lg text-gray-600 mb-4">{error}</p>
+        <button
+          onClick={fetchOrders}
+          className="px-6 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344]"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
-      <div className="bg-white py-4 px-6 flex items-center justify-between shadow-sm">
-        <h1 className="text-xl font-medium">도넛캠프 - 주문 관리</h1>
-      </div>
-
-      {/* 탭 메뉴 */}
-      <div className="flex bg-white shadow-sm">
-        {(['pending', 'preparing', 'ready', 'completed'] as const).map((status) => (
+      <div className="max-w-md mx-auto p-4 sm:p-6">
+        {/* 필터 버튼 */}
+        <div className="flex space-x-2 mb-4 overflow-x-auto pb-2">
           <button
-            key={status}
-            onClick={() => setActiveTab(status)}
-            className={`flex-1 py-3 text-sm font-medium relative ${
-              activeTab === status ? 'text-[#FF7355] border-b-2 border-[#FF7355]' : 'text-gray-500'
+            onClick={() => setFilter('all')}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+              filter === 'all' ? 'bg-[#FF7355] text-white' : 'bg-white text-gray-600'
             }`}
           >
-            {getStatusText(status)}
-            {getStatusCount(status) > 0 && (
-              <span className={`absolute -top-1 -right-1 px-2 py-0.5 text-xs rounded-full ${
-                activeTab === status ? 'bg-[#FF7355] text-white' : 'bg-gray-200 text-gray-600'
-              }`}>
-                {getStatusCount(status)}
-              </span>
-            )}
+            전체
           </button>
-        ))}
-      </div>
+          <button
+            onClick={() => setFilter('pending')}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+              filter === 'pending' ? 'bg-[#FF7355] text-white' : 'bg-white text-gray-600'
+            }`}
+          >
+            주문 대기
+          </button>
+          <button
+            onClick={() => setFilter('accepted')}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+              filter === 'accepted' ? 'bg-[#FF7355] text-white' : 'bg-white text-gray-600'
+            }`}
+          >
+            주문 수락
+          </button>
+          <button
+            onClick={() => setFilter('preparing')}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+              filter === 'preparing' ? 'bg-[#FF7355] text-white' : 'bg-white text-gray-600'
+            }`}
+          >
+            준비 중
+          </button>
+          <button
+            onClick={() => setFilter('ready')}
+            className={`px-3 py-1 rounded-full text-sm whitespace-nowrap ${
+              filter === 'ready' ? 'bg-[#FF7355] text-white' : 'bg-white text-gray-600'
+            }`}
+          >
+            준비 완료
+          </button>
+        </div>
 
-      {/* 주문 목록 */}
-      <div className="p-6 space-y-4">
-        {filteredOrders.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            {activeTab === 'completed' ? '완료된 주문이 없습니다.' : '새로운 주문이 없습니다.'}
-          </div>
-        ) : (
-          filteredOrders.map((order) => (
-            <div key={order.id} className="bg-white rounded-lg shadow p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="font-medium">{order.customerName}</span>
-                  <span className="text-sm text-gray-500 ml-2">#{order.id}</span>
-                </div>
-                <div className="text-sm text-gray-500">{order.createdAt}</div>
-              </div>
-
-              <div className="bg-gray-50 rounded p-3">
-                <div className="text-sm font-medium text-[#FF7355] mb-2">
-                  픽업 예정: {order.pickupTime}
-                </div>
-                {order.items.map((item, index) => (
-                  <div key={index} className="flex justify-between text-sm">
+        {/* 주문 목록 */}
+        <div className="space-y-4">
+          {filteredOrders.length > 0 ? (
+            filteredOrders.map((order) => (
+              <Link
+                key={order.id}
+                href={`/bizes/store/${storeId}/manage/orders/${order.id}`}
+                className="block"
+              >
+                <div className="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-shadow">
+                  <div className="flex justify-between items-start mb-2">
                     <div>
-                      {item.name} x {item.quantity}
-                      {item.options && item.options.map((option, i) => (
-                        <span key={i} className="text-gray-500 text-xs ml-1">
-                          ({option})
-                        </span>
-                      ))}
+                      <h3 className="text-lg font-bold">주문 #{order.orderNumber}</h3>
+                      <p className="text-sm text-gray-500">
+                        {new Date(order.createdAt).toLocaleString()}
+                      </p>
                     </div>
+                    <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(order.status)}`}>
+                      {getStatusText(order.status)}
+                    </span>
                   </div>
-                ))}
-                <div className="mt-2 pt-2 border-t border-gray-200 flex justify-between">
-                  <span className="text-sm font-medium">총 결제금액</span>
-                  <span className="font-medium">{order.totalAmount.toLocaleString()}원</span>
+                  <div className="space-y-1 text-sm">
+                    <p>고객: {order.customerName}</p>
+                    <p>전화: {order.customerPhone}</p>
+                    <p>픽업 예정: {new Date(order.pickupTime).toLocaleString()}</p>
+                    <p className="font-medium text-[#FF7355]">
+                      총 금액: {order.totalAmount.toLocaleString()}원
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              {order.status !== 'completed' && (
-                <button
-                  onClick={() => {
-                    const nextStatus = getNextStatus(order.status);
-                    if (nextStatus) updateOrderStatus(order.id, nextStatus);
-                  }}
-                  className="w-full py-2 bg-[#FF7355] text-white rounded-lg text-sm font-medium hover:bg-[#FF6344] transition-colors"
-                >
-                  {order.status === 'pending' && '주문 접수하기'}
-                  {order.status === 'preparing' && '준비 완료하기'}
-                  {order.status === 'ready' && '픽업 완료하기'}
-                </button>
-              )}
+              </Link>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">해당 상태의 주문이 없습니다.</p>
             </div>
-          ))
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

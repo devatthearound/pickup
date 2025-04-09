@@ -15,7 +15,7 @@ const sizeClasses = {
 };
 
 const StoreProfileImage: React.FC<StoreProfileImageProps> = ({ name, imageUrl, size, onClick }) => {
-  const initial = name.charAt(0);
+  const initial = name ? name.charAt(0) : '?';
   const sizeClass = sizeClasses[size];
 
   if (!imageUrl) {

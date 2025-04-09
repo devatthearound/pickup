@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { toast } from 'react-hot-toast';
 import StoreProfileImage from '@/components/StoreProfileImage';
 import { useStoreProfile } from '@/store/useStoreProfile';
-import { useParams } from 'next/navigation';
 
 interface BusinessHours {
   day: string;
@@ -12,165 +13,509 @@ interface BusinessHours {
   isOpen: boolean;
 }
 
-interface StoreProfile {
-  name: string;
-  description: string;
-  address: string;
-  businessHours: string;
-  businessHoursDetail: BusinessHours[];
+interface SpecialDay {
+  id?: number;
+  date: string;
+  isClosed: boolean;
+  openingTime?: string;
+  closingTime?: string;
+  reason?: string;
 }
 
-interface ApiResponse {
+interface StoreInfo {
   id: number;
   name: string;
+  englishName: string;
   description: string;
   address: string;
+  addressDetail: string;
+  phone: string;
   businessHours: string;
-  businessHoursDetail: BusinessHours[];
+  logoImage: string | null;
+  bannerImage?: string;
 }
 
-// API 응답 타입 정의 수정
-interface StoreDetailResponse {
+// 스토어 업데이트 응답 타입
+interface UpdateStoreResponse {
   success: boolean;
   message: string;
   data: {
     id: number;
-    ownerId: number;
-    owner: {
-      id: number;
-      firstName: string;
-      lastName: string;
-      profileImage: string | null;
-    };
     name: string;
     englishName: string;
-    businessRegistrationNumber: string;
-    businessRegistrationFile: string;
-    categoryId: number;
+    description: string;
     address: string;
     addressDetail: string;
     phone: string;
     businessHours: string;
-    description: string;
     logoImage: string | null;
-    bannerImage: string | null;
-    isVerified: boolean;
-    isActive: boolean;
   };
 }
 
-// 영업시간 API 응답 타입 정의 수정
-interface OperatingHoursResponse {
-  success: boolean;
-  message: string;
-  data: {
-    operatingHours: Array<{
-      id: number;
-      dayOfWeek: string;
-      openingTime: string;
-      closingTime: string;
-      isDayOff: boolean;
-    }>;
-    operatingHoursByDay: Record<string, {
-      id: number;
-      dayOfWeek: string;
-      openingTime: string;
-      closingTime: string;
-      isDayOff: boolean;
-    }>;
-  };
-}
-
-export default function StoreSetupPage({ params }: { params: { storeId: string } }) {
+export default function StoreSetupPage() {
+  const { storeId } = useParams();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isHoursLoading, setIsHoursLoading] = useState(true);
+  const [isSpecialDaysLoading, setIsSpecialDaysLoading] = useState(true);
+  const [hasOperatingHoursData, setHasOperatingHoursData] = useState(false);
   const { imageUrl, setImageUrl } = useStoreProfile();
-  const [profile, setProfile] = useState<StoreProfile>({
-    name: '도넛캠프',
-    description: '매일 구워내는 따뜻한 도넛',
-    address: '서울시 마포구 연남로 123길 34',
-    businessHours: '10:00-20:00',
-    businessHoursDetail: [
-      { day: '월', open: '10:00', close: '20:00', isOpen: true },
-      { day: '화', open: '10:00', close: '20:00', isOpen: true },
-      { day: '수', open: '10:00', close: '20:00', isOpen: true },
-      { day: '목', open: '10:00', close: '20:00', isOpen: true },
-      { day: '금', open: '10:00', close: '20:00', isOpen: true },
-      { day: '토', open: '10:00', close: '20:00', isOpen: true },
-      { day: '일', open: '10:00', close: '20:00', isOpen: false },
-    ]
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [storeInfo, setStoreInfo] = useState<StoreInfo>({
+    id: Number(storeId),
+    name: '',
+    englishName: '',
+    description: '',
+    address: '',
+    addressDetail: '',
+    phone: '',
+    businessHours: '',
+    logoImage: null
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isLoadingHours, setIsLoadingHours] = useState(false);
-  const { storeId } = useParams();
+  const [businessHours, setBusinessHours] = useState<BusinessHours[]>([
+    { day: '월', open: '', close: '', isOpen: false },
+    { day: '화', open: '', close: '', isOpen: false },
+    { day: '수', open: '', close: '', isOpen: false },
+    { day: '목', open: '', close: '', isOpen: false },
+    { day: '금', open: '', close: '', isOpen: false },
+    { day: '토', open: '', close: '', isOpen: false },
+    { day: '일', open: '', close: '', isOpen: false },
+  ]);
+  
+  const [specialDays, setSpecialDays] = useState<SpecialDay[]>([]);
+  const [newSpecialDay, setNewSpecialDay] = useState<SpecialDay>({
+    date: '',
+    isClosed: true,
+    reason: ''
+  });
 
+  useEffect(() => {
+    if (storeId) {
+      fetchStoreInfo();
+      fetchOperatingHours();
+      fetchSpecialDays();
+    }
+  }, [storeId]);
 
-  // 영업시간 데이터 로딩
-  const fetchOperatingHours = async (storeId: number) => {
-    setIsLoadingHours(true);
+  // 매장 기본 정보 조회
+  const fetchStoreInfo = async () => {
+    setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/operating-hours`, {
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}`, {
+        method: 'GET',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
+        credentials: 'include'
       });
 
       if (!response.ok) {
-        throw new Error('영업시간 정보를 불러오는데 실패했습니다.');
+        throw new Error('매장 정보를 불러오는데 실패했습니다');
       }
 
-      const responseData: OperatingHoursResponse = await response.json();
+      const data = await response.json();
       
-      // 기본 영업시간 설정
-      const defaultHours: BusinessHours[] = [
-        { day: '월', open: '10:00', close: '20:00', isOpen: true },
-        { day: '화', open: '10:00', close: '20:00', isOpen: true },
-        { day: '수', open: '10:00', close: '20:00', isOpen: true },
-        { day: '목', open: '10:00', close: '20:00', isOpen: true },
-        { day: '금', open: '10:00', close: '20:00', isOpen: true },
-        { day: '토', open: '10:00', close: '20:00', isOpen: true },
-        { day: '일', open: '10:00', close: '20:00', isOpen: false },
-      ];
-
-      // API 데이터가 있는 경우 해당 데이터로 업데이트
-      if (responseData.data.operatingHours.length > 0) {
-        responseData.data.operatingHours.forEach(hour => {
-          const dayIndex = getDayIndex(hour.dayOfWeek);
-          if (dayIndex !== -1) {
-            defaultHours[dayIndex] = {
-              day: convertDayOfWeek(hour.dayOfWeek),
-              open: hour.openingTime,
-              close: hour.closingTime,
-              isOpen: !hour.isDayOff,
-            };
-          }
+      if (data.success && data.data) {
+        const storeData = data.data;
+        setStoreInfo({
+          id: storeData.id,
+          name: storeData.name || '',
+          englishName: storeData.englishName || '',
+          description: storeData.description || '',
+          address: storeData.address || '',
+          addressDetail: storeData.addressDetail || '',
+          phone: storeData.phone || '',
+          businessHours: storeData.businessHours || '',
+          logoImage: storeData.logoImage,
+          bannerImage: storeData.bannerImage
         });
-      }
 
-      setProfile(prev => ({
-        ...prev,
-        businessHoursDetail: defaultHours
-      }));
+        if (storeData.logoImage) {
+          setImageUrl(storeData.logoImage);
+        }
+      }
     } catch (error) {
-      console.error('영업시간 로딩 실패:', error);
+      console.error('매장 정보 로딩 실패:', error);
+      toast.error('매장 정보를 불러오는데 실패했습니다');
     } finally {
-      setIsLoadingHours(false);
+      setIsLoading(false);
     }
   };
 
-  // 초기 데이터 로딩
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!storeId) return;
+  // 영업시간 조회
+  const fetchOperatingHours = async () => {
+    setIsHoursLoading(true);
+    setHasOperatingHoursData(false);
+    try {
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/operating-hours`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('영업시간 정보를 불러오는데 실패했습니다');
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.data && data.data.operatingHours && data.data.operatingHours.length > 0) {
+        const updatedHours = [...businessHours];
+        let dataFound = false;
+
+        data.data.operatingHours.forEach((hour: any) => {
+          const dayIndex = getDayIndex(hour.dayOfWeek);
+          if (dayIndex !== -1) {
+            updatedHours[dayIndex] = {
+              day: convertDayOfWeek(hour.dayOfWeek),
+              open: hour.openingTime,
+              close: hour.closingTime,
+              isOpen: !hour.isDayOff
+            };
+            dataFound = true;
+          }
+        });
+
+        setBusinessHours(updatedHours);
+        setHasOperatingHoursData(dataFound);
+      } else {
+        setHasOperatingHoursData(false);
+      }
+    } catch (error) {
+      console.error('영업시간 로딩 실패:', error);
+      toast.error('영업시간 정보를 불러오는데 실패했습니다');
+      setHasOperatingHoursData(false);
+    } finally {
+      setIsHoursLoading(false);
+    }
+  };
+
+  // 스토어 정보 업데이트
+  const updateStoreInfo = async () => {
+    try {
+      const formData = new FormData();
       
-      await fetchStoreData(Number(storeId));
-      await fetchOperatingHours(Number(storeId));
-    };
+      // JSON 데이터 추가
+      const jsonData = {
+        name: storeInfo.name,
+        englishName: storeInfo.englishName,
+        description: storeInfo.description,
+        address: storeInfo.address,
+        addressDetail: storeInfo.addressDetail,
+        phone: storeInfo.phone,
+        businessHours: storeInfo.businessHours
+      };
+      
+      // FormData에 JSON 데이터 추가
+      formData.append('data', JSON.stringify(jsonData));
+      
+      // 로고 이미지가 있으면 추가
+      if (logoFile) {
+        formData.append('logoImage', logoFile);
+      }
 
-    fetchData();
-  }, [storeId]);
+      // 배너 이미지가 있으면 추가
+      if (bannerFile) {
+        formData.append('bannerImage', bannerFile);
+      }
 
-  // 요일 변환 유틸리티 함수
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}`, {
+        method: 'PATCH',
+        body: formData,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '스토어 정보 업데이트에 실패했습니다');
+      }
+
+      const responseData: UpdateStoreResponse = await response.json();
+      
+      if (responseData.success) {
+        // 업데이트된 데이터로 상태 갱신
+        setStoreInfo(responseData.data);
+        
+        // 로고 이미지 URL 업데이트
+        if (responseData.data.logoImage) {
+          setImageUrl(responseData.data.logoImage);
+        }
+        
+        toast.success('스토어 정보가 성공적으로 업데이트되었습니다');
+      } else {
+        throw new Error(responseData.message);
+      }
+
+      return responseData;
+    } catch (error) {
+      console.error('스토어 정보 업데이트 실패:', error);
+      toast.error(error instanceof Error ? error.message : '스토어 정보 업데이트에 실패했습니다');
+      throw error;
+    }
+  };
+
+  // 영업시간 업데이트
+  const updateOperatingHours = async () => {
+    try {
+      const operatingHoursData = businessHours.map(hour => ({
+        dayOfWeek: convertDayToEnglish(hour.day),
+        openingTime: hour.isOpen ? hour.open : null,
+        closingTime: hour.isOpen ? hour.close : null,
+        isDayOff: !hour.isOpen
+      }));
+
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/operating-hours/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(operatingHoursData),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || '영업시간 업데이트에 실패했습니다');
+      }
+
+      const responseData = await response.json();
+
+      if (responseData.success !== false) {
+        toast.success('영업시간이 성공적으로 업데이트되었습니다.');
+        fetchOperatingHours();
+        return responseData;
+      } else {
+        throw new Error(responseData.message || '영업시간 업데이트 응답 실패');
+      }
+    } catch (error) {
+      console.error('영업시간 업데이트 실패:', error);
+      toast.error(error instanceof Error ? error.message : '영업시간 업데이트 중 오류가 발생했습니다.');
+      throw error;
+    }
+  };
+
+  // 특별 영업일/휴무일 조회
+  const fetchSpecialDays = async () => {
+    setIsSpecialDaysLoading(true);
+    try {
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/special-days`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('특별 영업일/휴무일 정보를 불러오는데 실패했습니다');
+      }
+
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setSpecialDays(data.data.map((item: any) => ({
+          id: item.id,
+          date: item.date.split('T')[0], // ISO 형식에서 날짜만 추출
+          isClosed: item.isClosed,
+          openingTime: item.openingTime,
+          closingTime: item.closingTime,
+          reason: item.reason
+        })));
+      }
+    } catch (error) {
+      console.error('특별 영업일/휴무일 로딩 실패:', error);
+      toast.error('특별 영업일/휴무일 정보를 불러오는데 실패했습니다');
+    } finally {
+      setIsSpecialDaysLoading(false);
+    }
+  };
+
+  // 새 특별 영업일/휴무일 추가
+  const addSpecialDay = async () => {
+    if (!newSpecialDay.date) {
+      toast.error('날짜를 선택해주세요');
+      return;
+    }
+
+    try {
+      const payload = {
+        date: newSpecialDay.date,
+        isClosed: newSpecialDay.isClosed
+      };
+
+      // 영업일인 경우 시간 정보 추가
+      if (!newSpecialDay.isClosed) {
+        if (!newSpecialDay.openingTime || !newSpecialDay.closingTime) {
+          toast.error('영업 시간을 입력해주세요');
+          return;
+        }
+        Object.assign(payload, {
+          openingTime: newSpecialDay.openingTime,
+          closingTime: newSpecialDay.closingTime
+        });
+      }
+
+      // 사유가 있는 경우 추가
+      if (newSpecialDay.reason) {
+        Object.assign(payload, { reason: newSpecialDay.reason });
+      }
+
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/special-days`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(payload),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('특별 영업일/휴무일 추가에 실패했습니다');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('특별 영업일/휴무일이 추가되었습니다');
+        setNewSpecialDay({
+          date: '',
+          isClosed: true,
+          reason: ''
+        });
+        fetchSpecialDays(); // 목록 새로고침
+      }
+    } catch (error) {
+      console.error('특별 영업일/휴무일 추가 실패:', error);
+      toast.error('특별 영업일/휴무일 추가에 실패했습니다');
+    }
+  };
+
+  // 특별 영업일/휴무일 삭제
+  const deleteSpecialDay = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/special-days/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error('특별 영업일/휴무일 삭제에 실패했습니다');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('특별 영업일/휴무일이 삭제되었습니다');
+        setSpecialDays(specialDays.filter(day => day.id !== id));
+      }
+    } catch (error) {
+      console.error('특별 영업일/휴무일 삭제 실패:', error);
+      toast.error('특별 영업일/휴무일 삭제에 실패했습니다');
+    }
+  };
+
+  // 기본 정보만 저장하는 함수
+  const handleBasicInfoSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      // 필수 필드 검증
+      if (!storeInfo.name || !storeInfo.address || !storeInfo.phone || !storeInfo.businessHours) {
+        toast.error('필수 정보를 모두 입력해주세요');
+        return;
+      }
+
+      // 스토어 정보 업데이트
+      await updateStoreInfo();
+      toast.success('기본 정보가 성공적으로 저장되었습니다');
+    } catch (error) {
+      console.error('저장 실패:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 영업시간만 저장하는 함수
+  const handleOperatingHoursSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+
+    try {
+      // 영업시간 업데이트
+      await updateOperatingHours();
+      toast.success('영업시간이 성공적으로 저장되었습니다');
+    } catch (error) {
+      console.error('저장 실패:', error);
+      toast.error('영업시간 저장에 실패했습니다');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // 스토어 정보 입력 변경 처리
+  const handleStoreInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setStoreInfo(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // 영업시간 변경 처리
+  const handleBusinessHoursChange = (index: number, field: keyof BusinessHours, value: string | boolean) => {
+    const updatedHours = [...businessHours];
+    updatedHours[index] = { ...updatedHours[index], [field]: value };
+    setBusinessHours(updatedHours);
+  };
+
+  // 로고 이미지 변경 처리
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // 파일 이름이 없는 경우 현재 시간을 사용
+      const fileName = file.name || `logo-${Date.now()}.${file.type.split('/')[1]}`;
+      const renamedFile = new File([file], fileName, { type: file.type });
+      setLogoFile(renamedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImageUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 배너 이미지 변경 처리
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const fileName = file.name || `banner-${Date.now()}.${file.type.split('/')[1]}`;
+      const renamedFile = new File([file], fileName, { type: file.type });
+      setBannerFile(renamedFile);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setStoreInfo(prev => ({
+          ...prev,
+          bannerImage: reader.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 유틸리티 함수: 요일 변환
   const convertDayOfWeek = (day: string): string => {
     const dayMap: { [key: string]: string } = {
       'monday': '월',
@@ -184,7 +529,7 @@ export default function StoreSetupPage({ params }: { params: { storeId: string }
     return dayMap[day.toLowerCase()] || day;
   };
 
-  // 요일 인덱스 찾기 유틸리티 함수
+  // 유틸리티 함수: 요일 인덱스 찾기
   const getDayIndex = (day: string): number => {
     const dayMap: { [key: string]: number } = {
       'monday': 0,
@@ -198,7 +543,7 @@ export default function StoreSetupPage({ params }: { params: { storeId: string }
     return dayMap[day.toLowerCase()] ?? -1;
   };
 
-  // 한글 요일을 영어로 변환하는 유틸리티 함수
+  // 유틸리티 함수: 한글 요일을 영어로 변환
   const convertDayToEnglish = (day: string): string => {
     const dayMap: { [key: string]: string } = {
       '월': 'monday',
@@ -212,229 +557,209 @@ export default function StoreSetupPage({ params }: { params: { storeId: string }
     return dayMap[day] || day;
   };
 
-  // 영업시간 일괄 업데이트 함수 수정
-  const updateOperatingHours = async (businessHoursDetail: BusinessHours[]) => {
-    if (!storeId) return;
-
-    try {
-      const operatingHours = businessHoursDetail.map(hour => ({
-        dayOfWeek: convertDayToEnglish(hour.day),
-        openingTime: hour.open,
-        closingTime: hour.close,
-        isDayOff: !hour.isOpen
-      }));
-
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/operating-hours/bulk`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(operatingHours)
-      });
-
-      if (!response.ok) {
-        throw new Error('영업시간 업데이트 실패');
-      }
-    } catch (error) {
-      console.error('영업시간 업데이트 실패:', error);
-      throw error;
-    }
-  };
-
-  // fetchStoreData 함수도 수정
-  const fetchStoreData = async (storeId: number) => {
-    try {
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('매장을 찾을 수 없습니다.');
-        }
-        throw new Error('매장 정보를 불러오는데 실패했습니다.');
-      }
-
-      const responseData: StoreDetailResponse = await response.json();
-      const { data } = responseData;
-
-      // 이미지 URL 설정
-      if (data.logoImage) {
-        setImageUrl(data.logoImage);
-      }
-
-      // 기본 정보 설정
-      setProfile(prev => ({
-        ...prev,
-        name: data.name,
-        description: data.description,
-        address: `${data.address} ${data.addressDetail}`.trim(),
-        businessHours: data.businessHours,
-      }));
-
-      // 상세 소개글 설정
-      setAboutText(data.description);
-
-    } catch (error) {
-      console.error('매장 정보 로딩 실패:', error);
-      alert(error instanceof Error ? error.message : '매장 정보를 불러오는데 실패했습니다.');
-    }
-  };
-
-  const handleImageClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImageUrl(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleBusinessHoursChange = (index: number, field: keyof BusinessHours, value: string | boolean) => {
-    const updatedHours = [...profile.businessHoursDetail];
-    updatedHours[index] = { ...updatedHours[index], [field]: value };
-    setProfile(prev => ({
-      ...prev,
-      businessHoursDetail: updatedHours
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // 1. 기본 정보 업데이트
-      const storeResponse = await fetch(`http://localhost:3001/api/stores/${storeId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: profile.name,
-          description: profile.description,
-          address: profile.address,
-          businessHours: profile.businessHours,
-        })
-      });
-
-      if (!storeResponse.ok) throw new Error('매장 정보 업데이트 실패');
-
-      // 2. 영업시간 업데이트
-      await updateOperatingHours(profile.businessHoursDetail);
-
-      // TODO: 성공 메시지 표시
-      alert('매장 정보가 성공적으로 업데이트되었습니다.');
-    } catch (error) {
-      console.error('매장 정보 업데이트 실패:', error);
-      alert('매장 정보 업데이트에 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const [aboutText, setAboutText] = useState(`도넛캠프는 매일 아침 신선한 재료로 정성스럽게 만드는 수제 도넛 전문점입니다. 클래식한 도넛부터 시즌 한정 도넛까지, 다양한 맛을 경험해보세요.
-
-• 최소 30분 전 예약 필수
-
-• 당일 픽업 가능
-
-• 대량 주문 문의 (카카오톡: @donutcamp)`);
-
-  const handleAboutChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setAboutText(e.target.value);
-  };
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF7355]"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-8">스토어 설정</h1>
       
-      <form onSubmit={handleSubmit} className="space-y-8">
+      {/* 기본 정보 폼 */}
+      <form onSubmit={handleBasicInfoSubmit} className="space-y-8">
         {/* 프로필 이미지 */}
         <div className="flex flex-col items-center gap-4">
           <StoreProfileImage
-            name={profile.name}
+            name={storeInfo.name}
             imageUrl={imageUrl || undefined}
             size="lg"
-            onClick={handleImageClick}
+            onClick={() => document.getElementById('logoInput')?.click()}
           />
           <input
             type="file"
-            ref={fileInputRef}
-            onChange={handleImageChange}
+            id="logoInput"
+            onChange={handleLogoChange}
             accept="image/*"
             className="hidden"
           />
+          <p className="text-sm text-gray-500">이미지를 클릭하여 로고 변경</p>
         </div>
 
-        {/* 스토어 정보 폼 */}
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              스토어 이름
-            </label>
-            <input
-              type="text"
-              value={profile.name}
-              onChange={(e) => setProfile(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
-            />
-          </div>
+        {/* 기본 정보 */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <h2 className="text-lg font-medium mb-4">기본 정보</h2>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              소개글
-            </label>
-            <input
-              type="text"
-              value={profile.description}
-              onChange={(e) => setProfile(prev => ({ ...prev, description: e.target.value }))}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
-            />
-          </div>
+          {/* 배너 이미지 표시 및 변경 */}
+          {storeInfo.bannerImage && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                배너 이미지
+              </label>
+              <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden relative group">
+                <img
+                  src={storeInfo.bannerImage}
+                  alt={`${storeInfo.name} 배너 이미지`}
+                  className="object-cover w-full h-full"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById('bannerInput')?.click()}
+                    className="px-4 py-2 bg-white text-gray-800 rounded-lg hover:bg-gray-100 transition-colors"
+                  >
+                    배너 이미지 변경
+                  </button>
+                </div>
+              </div>
+              <input
+                type="file"
+                id="bannerInput"
+                onChange={handleBannerChange}
+                accept="image/*"
+                className="hidden"
+              />
+            </div>
+          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              주소
-            </label>
-            <input
-              type="text"
-              value={profile.address}
-              onChange={(e) => setProfile(prev => ({ ...prev, address: e.target.value }))}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
-            />
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                스토어 이름 (한글) *
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={storeInfo.name}
+                onChange={handleStoreInfoChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                스토어 이름 (영문)
+              </label>
+              <input
+                type="text"
+                name="englishName"
+                value={storeInfo.englishName}
+                onChange={handleStoreInfoChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                주소 *
+              </label>
+              <input
+                type="text"
+                name="address"
+                value={storeInfo.address}
+                onChange={handleStoreInfoChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
+                required
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                상세 주소
+              </label>
+              <input
+                type="text"
+                name="addressDetail"
+                value={storeInfo.addressDetail}
+                onChange={handleStoreInfoChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              대표 영업시간
-            </label>
-            <input
-              type="text"
-              value={profile.businessHours}
-              onChange={(e) => setProfile(prev => ({ ...prev, businessHours: e.target.value }))}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                전화번호 *
+              </label>
+              <input
+                type="text"
+                name="phone"
+                value={storeInfo.phone}
+                onChange={handleStoreInfoChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                대표 영업시간 *
+              </label>
+              <input
+                type="text"
+                name="businessHours"
+                value={storeInfo.businessHours}
+                onChange={handleStoreInfoChange}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
+                placeholder="예: 10:00-20:00"
+                required
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                매장 소개
+              </label>
+              <textarea
+                name="description"
+                value={storeInfo.description}
+                onChange={handleStoreInfoChange}
+                rows={4}
+                className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#FF7355]"
+              ></textarea>
+            </div>
+          </div>
+          
+          {/* 기본 정보 저장 버튼 */}
+          <div className="flex justify-end mt-6">
+            <button
+              type="submit"
+              disabled={isSaving}
+              className={`px-6 py-3 bg-[#FF7355] text-white rounded-lg transition-colors ${
+                isSaving ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#FF7355]/90'
+              }`}
+            >
+              {isSaving ? '저장 중...' : '기본 정보 저장'}
+            </button>
           </div>
         </div>
+      </form>
 
-        {/* 요일별 영업시간 설정 - 로딩 상태 추가 */}
-        <div className="bg-gray-50 rounded-xl p-6">
+      {/* 영업시간 폼 */}
+      <form onSubmit={handleOperatingHoursSubmit} className="space-y-8 mt-8">
+        <div className="bg-white rounded-lg shadow-sm p-6">
           <h2 className="text-lg font-medium mb-4">요일별 영업시간 설정</h2>
-          {isLoadingHours ? (
-            <div className="text-center py-4">영업시간을 불러오는 중...</div>
-          ) : (
-            <div className="space-y-3">
-              {profile.businessHoursDetail.map((hours, index) => (
+
+          {isHoursLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#FF7355]"></div>
+            </div>
+          ) : !hasOperatingHoursData ? (
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+              <p className="text-sm text-yellow-700">
+                설정된 영업시간 정보가 없습니다.
+                <br/>
+                영업시간을 설정하고 '영업시간 저장' 버튼을 눌러주세요.
+              </p>
+            </div>
+          ) : null}
+
+          {(!isHoursLoading) && (
+            <div className="space-y-4">
+              {businessHours.map((hours, index) => (
                 <div key={hours.day} className="flex items-center gap-4">
                   <div className="w-8 font-medium text-gray-700">{hours.day}</div>
                   <label className="flex items-center gap-2">
@@ -448,7 +773,7 @@ export default function StoreSetupPage({ params }: { params: { storeId: string }
                   </label>
                   <input
                     type="time"
-                    value={hours.open}
+                    value={hours.open || ''}
                     onChange={(e) => handleBusinessHoursChange(index, 'open', e.target.value)}
                     disabled={!hours.isOpen}
                     className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355] focus:border-transparent disabled:bg-gray-100"
@@ -456,7 +781,7 @@ export default function StoreSetupPage({ params }: { params: { storeId: string }
                   <span className="text-gray-400">~</span>
                   <input
                     type="time"
-                    value={hours.close}
+                    value={hours.close || ''}
                     onChange={(e) => handleBusinessHoursChange(index, 'close', e.target.value)}
                     disabled={!hours.isOpen}
                     className="flex-1 px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355] focus:border-transparent disabled:bg-gray-100"
@@ -465,19 +790,164 @@ export default function StoreSetupPage({ params }: { params: { storeId: string }
               ))}
             </div>
           )}
-        </div>        {/* 저장 버튼 업데이트 */}
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`px-6 py-2 bg-[#FF7355] text-white rounded-lg transition-colors ${
-              isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#FF7355]/90'
-            }`}
-          >
-            {isLoading ? '저장 중...' : '저장하기'}
-          </button>
+
+          <div className="flex justify-end mt-6">
+            <button
+              type="submit"
+              disabled={isSaving || isHoursLoading}
+              className={`px-6 py-3 bg-[#FF7355] text-white rounded-lg transition-colors ${
+                (isSaving || isHoursLoading) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#FF7355]/90'
+              }`}
+            >
+              {isSaving ? '저장 중...' : '영업시간 저장'}
+            </button>
+          </div>
         </div>
       </form>
+
+      {/* 특별 영업일/휴무일 설정 */}
+      <div className="bg-white rounded-lg shadow-sm p-6 mt-8">
+        <h2 className="text-lg font-medium mb-4">특별 영업일/휴무일 설정</h2>
+        
+        {/* 새 특별일 추가 폼 */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-md font-medium mb-3">새 특별일 추가</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">날짜 *</label>
+              <input
+                type="date"
+                value={newSpecialDay.date}
+                onChange={(e) => setNewSpecialDay({...newSpecialDay, date: e.target.value})}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355] focus:border-transparent"
+                required
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">종류</label>
+              <div className="flex items-center gap-4 h-10">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={newSpecialDay.isClosed}
+                    onChange={() => setNewSpecialDay({...newSpecialDay, isClosed: true})}
+                    className="w-4 h-4 text-[#FF7355] focus:ring-[#FF7355]"
+                  />
+                  <span className="text-sm">휴무일</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    checked={!newSpecialDay.isClosed}
+                    onChange={() => setNewSpecialDay({...newSpecialDay, isClosed: false})}
+                    className="w-4 h-4 text-[#FF7355] focus:ring-[#FF7355]"
+                  />
+                  <span className="text-sm">특별 영업일</span>
+                </label>
+              </div>
+            </div>
+            
+            {!newSpecialDay.isClosed && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">오픈 시간 *</label>
+                  <input
+                    type="time"
+                    value={newSpecialDay.openingTime || ''}
+                    onChange={(e) => setNewSpecialDay({...newSpecialDay, openingTime: e.target.value})}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355] focus:border-transparent"
+                    required={!newSpecialDay.isClosed}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">마감 시간 *</label>
+                  <input
+                    type="time"
+                    value={newSpecialDay.closingTime || ''}
+                    onChange={(e) => setNewSpecialDay({...newSpecialDay, closingTime: e.target.value})}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355] focus:border-transparent"
+                    required={!newSpecialDay.isClosed}
+                  />
+                </div>
+              </>
+            )}
+            
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">사유</label>
+              <input
+                type="text"
+                value={newSpecialDay.reason || ''}
+                onChange={(e) => setNewSpecialDay({...newSpecialDay, reason: e.target.value})}
+                placeholder={newSpecialDay.isClosed ? "예: 명절 휴무" : "예: 연장 영업"}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355] focus:border-transparent"
+              />
+            </div>
+            
+            <div className="md:col-span-2">
+              <button
+                type="button"
+                onClick={addSpecialDay}
+                className="w-full py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF7355]/90 transition-colors"
+              >
+                추가하기
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* 특별일 목록 */}
+        <div>
+          <h3 className="text-md font-medium mb-3">등록된 특별 영업일/휴무일</h3>
+          
+          {isSpecialDaysLoading ? (
+            <div className="flex justify-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#FF7355]"></div>
+            </div>
+          ) : specialDays.length === 0 ? (
+            <div className="bg-gray-50 rounded-lg p-6 text-center text-gray-500">
+              등록된 특별 영업일/휴무일이 없습니다
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {specialDays.map((day) => (
+                <div key={day.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{day.date}</span>
+                      <span className={`px-2 py-0.5 text-xs rounded-full ${
+                        day.isClosed 
+                          ? 'bg-red-100 text-red-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {day.isClosed ? '휴무일' : '특별 영업일'}
+                      </span>
+                    </div>
+                    {!day.isClosed && (
+                      <div className="text-sm text-gray-600">
+                        {day.openingTime} ~ {day.closingTime}
+                      </div>
+                    )}
+                    {day.reason && (
+                      <div className="text-sm text-gray-600">
+                        사유: {day.reason}
+                      </div>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => day.id && deleteSpecialDay(day.id)}
+                    className="p-1 text-gray-400 hover:text-red-500"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
-} 
+}
