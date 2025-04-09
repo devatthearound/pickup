@@ -36,11 +36,9 @@ interface PaginatedResponse<T> {
 }
 
 export default function BenefitsPage() {
-  const router = useRouter();
   const { storeId } = useParams();
   const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
 
   const [newBenefit, setNewBenefit] = useState<Partial<Benefit>>({
     title: '',
@@ -55,7 +53,7 @@ export default function BenefitsPage() {
   useEffect(() => {
     const fetchBenefits = async () => {
       try {
-        const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}/benefits`);
+        const response = await axiosInstance.get(`http://13.124.138.71:3001/api/stores/${storeId}/benefits`);
         if (response.status !== 200) {
           throw new Error('혜택 목록을 불러오는데 실패했습니다');
         }
@@ -84,7 +82,7 @@ export default function BenefitsPage() {
     }
 
     try {
-      const response = await axiosInstance.post(`http://localhost:3001/api/stores/${storeId}/benefits`, newBenefit);
+      const response = await axiosInstance.post(`http://13.124.138.71:3001/api/stores/${storeId}/benefits`, newBenefit);
 
       if (response.status !== 201) {
         const errorData = await response.data;
@@ -111,7 +109,7 @@ export default function BenefitsPage() {
   // 혜택 삭제
   const deleteBenefit = async (benefitId: number) => {
     try {
-      const response = await axiosInstance.delete(`http://localhost:3001/api/stores/benefits/${benefitId}`);
+      const response = await axiosInstance.delete(`http://13.124.138.71:3001/api/stores/benefits/${benefitId}`);
 
       if (response.status !== 200) {
         throw new Error('혜택 삭제에 실패했습니다');
@@ -131,14 +129,12 @@ export default function BenefitsPage() {
   // 혜택 수정
   const updateBenefit = async (benefitId: number, updatedBenefit: Partial<Benefit>) => {
     try {
-      const response = await axiosInstance.patch(`http://localhost:3001/api/stores/benefits/${benefitId}`, updatedBenefit);
+      const response = await axiosInstance.patch(`http://13.124.138.71:3001/api/stores/benefits/${benefitId}`, updatedBenefit);
 
       if (response.status !== 200) {
         const errorData = await response.data;
         throw new Error(errorData.message || '혜택 수정에 실패했습니다');
       }
-
-      const apiResponse: ApiResponse<Benefit> = await response.data;
       
       // 기존 혜택의 모든 데이터를 유지하면서 isActive만 업데이트
       setBenefits(benefits.map(benefit => 

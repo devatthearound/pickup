@@ -29,7 +29,7 @@ export default function OptionManagement({ storeId, menuId }: OptionManagementPr
       if (response.data.length > 0 && !selectedGroup) {
         setSelectedGroup(response.data[0]);
       }
-    } catch (error) {
+    } catch (error:unknown) {
       toast.error('옵션 그룹 목록을 불러오는데 실패했습니다.');
     }
   };
@@ -39,7 +39,7 @@ export default function OptionManagement({ storeId, menuId }: OptionManagementPr
     try {
       const response = await menuService.getOptionItems(groupId);
       setOptionItems(response.data);
-    } catch (error) {
+    } catch (error:unknown) {
       toast.error('옵션 항목 목록을 불러오는데 실패했습니다.');
     }
   };
@@ -57,7 +57,7 @@ export default function OptionManagement({ storeId, menuId }: OptionManagementPr
       setIsGroupModalOpen(false);
       setEditingGroup(null);
       loadOptionGroups();
-    } catch (error) {
+    } catch (error:unknown) {
       toast.error('옵션 그룹 저장에 실패했습니다.');
     }
   };
@@ -73,7 +73,7 @@ export default function OptionManagement({ storeId, menuId }: OptionManagementPr
         setSelectedGroup(null);
         setOptionItems([]);
       }
-    } catch (error) {
+    } catch (error:unknown) {
       toast.error('옵션 그룹 삭제에 실패했습니다.');
     }
   };
@@ -92,7 +92,7 @@ export default function OptionManagement({ storeId, menuId }: OptionManagementPr
       setIsItemModalOpen(false);
       setEditingItem(null);
       loadOptionItems(selectedGroup.id);
-    } catch (error) {
+    } catch (error:unknown) {
       toast.error('옵션 항목 저장에 실패했습니다.');
     }
   };
@@ -106,7 +106,7 @@ export default function OptionManagement({ storeId, menuId }: OptionManagementPr
       if (selectedGroup) {
         loadOptionItems(selectedGroup.id);
       }
-    } catch (error) {
+    } catch (error:unknown) {
       toast.error('옵션 항목 삭제에 실패했습니다.');
     }
   };

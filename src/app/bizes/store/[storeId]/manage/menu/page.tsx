@@ -15,9 +15,6 @@ export default function MenuManagePage() {
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('name');
-  const [filterStatus, setFilterStatus] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   
   // 모달 상태
@@ -68,10 +65,6 @@ export default function MenuManagePage() {
 
       if (selectedCategory !== 'all') {
         params.categoryId = Number(selectedCategory);
-      }
-
-      if (filterStatus !== 'all') {
-        params.isAvailable = filterStatus === 'available';
       }
 
       const response = await menuService.getMenuItems(params);
@@ -188,7 +181,7 @@ export default function MenuManagePage() {
   // 필터 변경시 메뉴 목록 새로고침
   useEffect(() => {
     loadMenuItems();
-  }, [selectedCategory, filterStatus, sortBy, searchQuery]);
+  }, [selectedCategory]);
 
   return (
     <div className="p-6">

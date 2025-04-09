@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axiosInstance from '@/lib/axios-interceptor';
 
@@ -78,7 +78,7 @@ export default function PersonalInfoPage() {
         specialInstructions: ''
       }));
 
-      const response = await axiosInstance.post('http://localhost:3001/api/orders',{
+      const response = await axiosInstance.post('http://13.124.138.71:3001/api/orders',{
         storeId: storeId,
         items: orderItems,
         paymentMethod: 'cash',

@@ -1,60 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import axiosInstance from '@/lib/axios-interceptor';
-
-export enum OrderStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-  PREPARING = 'preparing',
-  READY = 'ready',
-  COMPLETED = 'completed',
-  CANCELED = 'canceled'
-}
-
-export enum PaymentStatus {
-  PENDING = 'pending',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  REFUNDED = 'refunded',
-  PARTIALLY_REFUNDED = 'partially_refunded'
-}
-
-interface OrderItem {
-  id: number;
-  menuItemId: number;
-  menuItem: {
-    id: number;
-    name: string;
-    price: string;
-    discountedPrice: string;
-    imageUrl: string | null;
-  };
-  quantity: number;
-  unitPrice: string;
-  totalPrice: string;
-  specialInstructions: string;
-  options: any[];
-}
-
-export interface Order {
-  id: number;
-  orderNumber: string;
-  customerName: string;
-  customerPhone: string;
-  status: OrderStatus;
-  totalAmount: string;
-  finalAmount: string;
-  paymentStatus: PaymentStatus;
-  pickupTime: string;
-  createdAt: string;
-  orderItems: OrderItem[];
-}
+import { OrderStatus, Order, PaymentStatus } from '@/types/order';
+import { useParams } from 'next/navigation';
 
 interface OrderQueryParams {
   page?: number;
@@ -65,9 +17,8 @@ interface OrderQueryParams {
   endDate?: string;
 }
 
-export default function StoreOrdersPage() {
-  const params = useParams();
-  const storeId = params.storeId;
+export default function OrdersList() {
+  const {storeId} = useParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +49,7 @@ export default function StoreOrdersPage() {
         }
       });
 
-      const response = await axiosInstance.get(`http://localhost:3001/api/orders?${queryString}`, {
+      const response = await axiosInstance.get(`http://13.124.138.71:3001/api/orders?${queryString}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -136,7 +87,7 @@ export default function StoreOrdersPage() {
           return; // 거부 사유가 없으면 취소
         }
         
-        const response = await axiosInstance.patch(`http://localhost:3001/api/orders/${orderId}/status`, { 
+        const response = await axiosInstance.patch(`http://13.124.138.71:3001/api/orders/${orderId}/status`, { 
           status: newStatus,
           rejectionReason: reason
         });
@@ -152,7 +103,7 @@ export default function StoreOrdersPage() {
       }
 
       // 일반 상태 변경
-      const response = await axiosInstance.patch(`http://localhost:3001/api/orders/${orderId}/status`,{
+      const response = await axiosInstance.patch(`http://13.124.138.71:3001/api/orders/${orderId}/status`,{
         status: newStatus
       });
 
@@ -213,40 +164,6 @@ export default function StoreOrdersPage() {
         return '주문 취소';
       default:
         return '완료';
-    }
-  };
-
-  const getNextStatus = (currentStatus: OrderStatus): OrderStatus | null => {
-    switch (currentStatus) {
-      case OrderStatus.PENDING:
-        return OrderStatus.ACCEPTED;
-      case OrderStatus.ACCEPTED:
-        return OrderStatus.PREPARING;
-      case OrderStatus.PREPARING:
-        return OrderStatus.READY;
-      case OrderStatus.READY:
-        return OrderStatus.COMPLETED;
-      case OrderStatus.REJECTED:
-      case OrderStatus.CANCELED:
-      case OrderStatus.COMPLETED:
-        return null;
-      default:
-        return null;
-    }
-  };
-
-  const getStatusButtonText = (status: OrderStatus): string => {
-    switch (status) {
-      case OrderStatus.ACCEPTED:
-        return '주문 수락';
-      case OrderStatus.PREPARING:
-        return '준비 시작';
-      case OrderStatus.READY:
-        return '준비 완료';
-      case OrderStatus.COMPLETED:
-        return '픽업 완료';
-      default:
-        return '';
     }
   };
 
@@ -349,6 +266,7 @@ export default function StoreOrdersPage() {
                           {item.specialInstructions && ` (${item.specialInstructions})`}
                         </li>
                       ))}
+                      
                     </ul>
                   </div>
                   <div className="mt-4 flex justify-between items-center">

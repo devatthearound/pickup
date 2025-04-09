@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Order, OrderStatus } from '../page';
 import axiosInstance from '@/lib/axios-interceptor';
+import { OrderStatus,Order } from '@/types/order';
 
 
 interface OrderQueryParams {
@@ -46,7 +46,7 @@ export default function StoreOrdersHistoryPage() {
         }
       });
 
-      const response = await axiosInstance.get(`http://localhost:3001/api/orders?${queryString}`, {
+      const response = await axiosInstance.get(`http://13.124.138.71:3001/api/orders?${queryString}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -70,7 +70,7 @@ export default function StoreOrdersHistoryPage() {
     if (storeId) {
       fetchOrders();
     }
-  }, [storeId, queryParams]);
+  }, [storeId, queryParams, fetchOrders]);
 
   const handleStatusFilterChange = (status: OrderStatus | '') => {
     setSelectedStatus(status);

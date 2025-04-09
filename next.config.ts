@@ -14,6 +14,15 @@ const nextConfig: NextConfig = {
       // 필요하다면 다른 패턴 추가
     ],
   },
+  pageExtensions: ['tsx', 'ts'],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;

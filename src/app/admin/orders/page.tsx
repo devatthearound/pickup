@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 
 interface Order {
@@ -127,13 +127,6 @@ export default function AdminOrdersPage() {
       ]
     }
   ];
-
-  // 주문 상태 변경
-  const updateOrderStatus = (orderId: string, newStatus: Order['status']) => {
-    setOrders(orders.map(order =>
-      order.id === orderId ? { ...order, status: newStatus } : order
-    ));
-  };
 
   // 상태별 색상
   const getStatusColor = (status: Order['status']) => {

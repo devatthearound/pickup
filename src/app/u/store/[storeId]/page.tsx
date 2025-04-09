@@ -71,7 +71,7 @@ export default function StorePage() {
   useEffect(() => {
     const fetchStoreInfo = async () => {
       try {
-        const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}`);
+        const response = await axiosInstance.get(`http://13.124.138.71:3001/api/stores/${storeId}`);
         const data = await response.data;
         setStoreInfo(data);
         setImageUrl(data.logoImageUrl);
@@ -87,7 +87,7 @@ export default function StorePage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await axiosInstance.get(`http://localhost:3001/api/menu-categories/store/${storeId}`);
+        const response = await axiosInstance.get(`http://13.124.138.71:3001/api/menu-categories/store/${storeId}`);
         const data = await response.data;
         if (data.success && data.data.length > 0) {
           setCategories(data.data);
@@ -112,7 +112,7 @@ export default function StorePage() {
       if (!selectedCategory) return;
       
       try {
-        const response = await axiosInstance.get(`http://localhost:3001/api/menu-items/category/${selectedCategory}`);
+        const response = await axiosInstance.get(`http://13.124.138.71:3001/api/menu-items/category/${selectedCategory}`);
         const data = await response.data;
         if (data.success) {
           setMenuItems(data.data || []);

@@ -1,9 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import StoreCard from '@/components/StoreCard';
+
 import { useStoreProfile } from '@/store/useStoreProfile';
 import StoreProfileImage from '@/components/StoreProfileImage';
 

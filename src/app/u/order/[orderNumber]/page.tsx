@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
 import axiosInstance from '@/lib/axios-interceptor';
 
 interface OrderItem {
@@ -74,7 +72,7 @@ export default function OrderDetailPage() {
   const fetchOrder = async (phone: string) => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`http://localhost:3001/api/orders/by-number-and-phone/${orderNumber}/${phone}`);
+      const response = await axiosInstance.get(`http://13.124.138.71:3001/api/orders/by-number-and-phone/${orderNumber}/${phone}`);
       if (response.status !== 200) {
         const errorData = await response.data;
         throw new Error(errorData.message || '주문을 찾을 수 없습니다.');

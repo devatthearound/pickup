@@ -3,7 +3,7 @@
 import axiosInstance from '@/lib/axios-interceptor';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-
+import Image from 'next/image';
 interface Store {
   id: string;
   name: string;
@@ -33,7 +33,7 @@ export default function StoreMainPage() {
 
   const fetchStores = async () => {
     try {
-      const response = await axiosInstance.get('http://localhost:3001/api/stores/owner/my-stores', {
+      const response = await axiosInstance.get('http://13.124.138.71:3001/api/stores/owner/my-stores', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export default function StoreMainPage() {
               <div className="p-4">
                 <div className="flex items-center gap-4">
                   {store.logo_image ? (
-                    <img
+                    <Image
                       src={store.logo_image}
                       alt={store.name}
                       className="w-16 h-16 rounded-lg object-cover"

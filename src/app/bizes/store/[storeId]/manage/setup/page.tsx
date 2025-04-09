@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import StoreProfileImage from '@/components/StoreProfileImage';
 import { useStoreProfile } from '@/store/useStoreProfile';
 import axiosInstance from '@/lib/axios-interceptor';
+import Image from 'next/image';
 
 interface BusinessHours {
   day: string;
@@ -104,7 +105,7 @@ export default function StoreSetupPage() {
   const fetchStoreInfo = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}`, {
+      const response = await axiosInstance.get(`http://13.124.138.71:3001/api/stores/${storeId}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -149,7 +150,7 @@ export default function StoreSetupPage() {
     setIsHoursLoading(true);
     setHasOperatingHoursData(false);
     try {
-      const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}/operating-hours`, {
+      const response = await axiosInstance.get(`http://13.124.138.71:3001/api/stores/${storeId}/operating-hours`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -222,7 +223,7 @@ export default function StoreSetupPage() {
         formData.append('bannerImage', bannerFile);
       }
 
-      const response = await axiosInstance.patch(`http://localhost:3001/api/stores/${storeId}`,formData, {
+      const response = await axiosInstance.patch(`http://13.124.138.71:3001/api/stores/${storeId}`,formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
@@ -267,7 +268,7 @@ export default function StoreSetupPage() {
         isDayOff: !hour.isOpen
       }));
 
-      const response = await axiosInstance.post(`http://localhost:3001/api/stores/${storeId}/operating-hours/bulk`, operatingHoursData);
+      const response = await axiosInstance.post(`http://13.124.138.71:3001/api/stores/${storeId}/operating-hours/bulk`, operatingHoursData);
 
       if (response.status !== 201) {
         const errorData = await response.data;
@@ -294,7 +295,7 @@ export default function StoreSetupPage() {
   const fetchSpecialDays = async () => {
     setIsSpecialDaysLoading(true);
     try {
-      const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}/special-days`, {
+      const response = await axiosInstance.get(`http://13.124.138.71:3001/api/stores/${storeId}/special-days`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -355,7 +356,7 @@ export default function StoreSetupPage() {
         Object.assign(payload, { reason: newSpecialDay.reason });
       }
 
-      const response = await axiosInstance.post(`http://localhost:3001/api/stores/${storeId}/special-days`, payload);
+      const response = await axiosInstance.post(`http://13.124.138.71:3001/api/stores/${storeId}/special-days`, payload);
 
       if (response.status !== 201) {
         const errorData = await response.data;
@@ -382,7 +383,7 @@ export default function StoreSetupPage() {
   // 특별 영업일/휴무일 삭제
   const deleteSpecialDay = async (id: number) => {
     try {
-      const response = await axiosInstance.delete(`http://localhost:3001/api/stores/${storeId}/special-days/${id}`, {
+      const response = await axiosInstance.delete(`http://13.124.138.71:3001/api/stores/${storeId}/special-days/${id}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -579,7 +580,9 @@ export default function StoreSetupPage() {
                 배너 이미지
               </label>
               <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden relative group">
-                <img
+                <Image
+                  width={100}
+                  height={100}
                   src={storeInfo.bannerImage}
                   alt={`${storeInfo.name} 배너 이미지`}
                   className="object-cover w-full h-full"

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 interface Order {
@@ -28,7 +27,6 @@ interface Benefit {
 }
 
 export default function StorePage() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'pending' | 'preparing' | 'ready'>('pending');
   
   // 예시 주문 데이터

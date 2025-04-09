@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axiosInstance from '@/lib/axios-interceptor';
 
 interface Inquiry {
   id: string;
@@ -21,38 +22,36 @@ interface FAQ {
   category: 'general' | 'operation' | 'system' | 'payment';
 }
 
-export default function CustomerServicePage() {
+interface CustomerServiceListProps {
+  storeId: string;
+}
+
+export default function CustomerServiceList({ storeId }: CustomerServiceListProps) {
   const [activeTab, setActiveTab] = useState<'inquiries' | 'faq' | 'write'>('inquiries');
   const [newInquiry, setNewInquiry] = useState({
     title: '',
     type: 'question' as Inquiry['type'],
     content: ''
   });
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // 예시 문의 데이터
-  const [inquiries] = useState<Inquiry[]>([
-    {
-      id: 'INQ-001',
-      storeName: '도넛캠프 강남점',
-      storeId: 'STORE-001',
-      type: 'system',
-      title: 'POS 시스템 오류 문의',
-      content: '오늘 오후 2시부터 POS 시스템에서 주문이 들어오지 않는 문제가 발생했습니다. 확인 부탁드립니다.',
-      status: 'completed',
-      createdAt: '2024-03-20 14:30',
-      answer: '시스템 점검을 완료했습니다. 현재는 정상 작동하는 것을 확인했습니다. 추가 문제가 있다면 다시 문의해 주세요.'
-    },
-    {
-      id: 'INQ-002',
-      storeName: '도넛캠프 강남점',
-      storeId: 'STORE-001',
-      type: 'operation',
-      title: '메뉴 품절 처리 방법 문의',
-      content: '재료 소진으로 일부 메뉴를 품절 처리하고 싶은데 어떻게 해야 하나요?',
-      status: 'pending',
-      createdAt: '2024-03-20 13:20'
-    }
-  ]);
+  useEffect(() => {
+    const fetchInquiries = async () => {
+      try {
+        const response = await axiosInstance.get(`http://13.124.138.71:3001/api/stores/${storeId}/inquiries`);
+        if (response.status === 200) {
+          setInquiries(response.data.data);
+        }
+      } catch (error) {
+        console.error('문의사항 조회 실패:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInquiries();
+  }, [storeId]);
 
   // FAQ 데이터
   const faqs: FAQ[] = [
@@ -83,6 +82,10 @@ export default function CustomerServicePage() {
     setNewInquiry({ title: '', type: 'question', content: '' });
     setActiveTab('inquiries');
   };
+
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">

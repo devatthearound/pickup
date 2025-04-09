@@ -1,7 +1,7 @@
 import axiosInstance from '@/lib/axios-interceptor';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://13.124.138.71:3001/api';
 
 export interface MenuCategory {
   id: number;
