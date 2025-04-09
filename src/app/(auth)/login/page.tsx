@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/lib/axios-interceptor';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,23 +24,14 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-        credentials: 'include', // HTTP-only 쿠키를 받기 위해 필요
+      const response = await axiosInstance.post('http://localhost:3001/api/auth/login', {
+        email: formData.email,
+        password: formData.password,
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
-        }
-        throw new Error('로그인 중 오류가 발생했습니다.');
+      if (response.status !== 201) {
+        const errorData = await response.data;
+        throw new Error(errorData.message || '이메일 또는 비밀번호가 올바르지 않습니다.');
       }
 
       // 로그인 성공 시 스토어 목록 페이지로 이동
@@ -117,7 +109,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               <input
                 id="remember-me"
                 name="remember-me"
@@ -128,13 +120,13 @@ export default function LoginPage() {
               <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                 로그인 상태 유지
               </label>
-            </div>
+            </div> */}
 
-            <div className="text-sm">
+            {/* <div className="text-sm">
               <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
                 비밀번호를 잊으셨나요?
               </a>
-            </div>
+            </div> */}
           </div>
 
           <div>

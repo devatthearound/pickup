@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
+import axiosInstance from '@/lib/axios-interceptor';
 
 interface StoreFormData {
   name: string;
@@ -89,14 +90,14 @@ export default function StoreRegisterPage() {
         formDataToSend.append('bannerImage', formData.bannerImage);
       }
 
-      const response = await fetch('http://localhost:3001/api/stores', {
-        method: 'POST',
-        body: formDataToSend,
-        credentials: 'include',
+      const response = await axiosInstance.post('http://localhost:3001/api/stores', formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response.status !== 201) {
+        const errorData = await response.data;
         
         switch (response.status) {
           case 400:

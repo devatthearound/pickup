@@ -1,8 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import axiosInstance from '@/lib/axios-interceptor';
 
 interface OrderItem {
   id: number;
@@ -59,20 +62,24 @@ interface Order {
 
 export default function OrderDetailPage() {
   const params = useParams();
-  const orderId = params.id;
+  const router = useRouter();
+  const orderNumber = params.orderNumber as string;
   const [order, setOrder] = useState<Order | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showStatusNotification, setShowStatusNotification] = useState(false);
   const [lastStatus, setLastStatus] = useState<string | null>(null);
+  const [searchPhone, setSearchPhone] = useState('');
 
-  const fetchOrder = async () => {
+  const fetchOrder = async (phone: string) => {
+    setLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/orders/${orderId}`);
-      if (!response.ok) {
-        throw new Error('주문 정보를 불러오는데 실패했습니다.');
+      const response = await axiosInstance.get(`http://localhost:3001/api/orders/by-number-and-phone/${orderNumber}/${phone}`);
+      if (response.status !== 200) {
+        const errorData = await response.data;
+        throw new Error(errorData.message || '주문을 찾을 수 없습니다.');
       }
-      const result = await response.json();
+      const result = await response.data;
       if (!result.success || !result.data) {
         throw new Error('주문 데이터가 올바르지 않습니다.');
       }
@@ -85,21 +92,23 @@ export default function OrderDetailPage() {
       }
 
       setOrder(result.data);
+      setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
+      setError(err instanceof Error ? err.message : '주문 조회에 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    if (orderId) {
-      fetchOrder();
-      // 30초마다 주문 상태 확인
-      const interval = setInterval(fetchOrder, 30000);
-      return () => clearInterval(interval);
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchPhone) {
+      setError('전화번호를 입력해주세요.');
+      return;
     }
-  }, [orderId]);
+
+    await fetchOrder(searchPhone);
+  };
 
   if (loading) {
     return (
@@ -112,13 +121,42 @@ export default function OrderDetailPage() {
   if (error || !order) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-6">
-        <p className="text-lg text-gray-600 mb-4">{error || '주문 정보를 찾을 수 없습니다.'}</p>
-        <button
-          onClick={() => window.history.back()}
-          className="px-6 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344]"
-        >
-          이전 페이지로
-        </button>
+        {/* <p className="text-lg text-gray-600 mb-4">{error || '주문 정보를 찾을 수 없습니다.'}</p> */}
+        <div className="w-full max-w-md bg-white p-6 rounded-xl shadow-sm">
+          <h2 className="text-lg font-medium mb-4">주문 검색</h2>
+          <div className="mb-4">
+            <p className="text-sm text-gray-600">주문 번호: {orderNumber}</p>
+          </div>
+          <form onSubmit={handleSearch} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                전화번호
+              </label>
+              <input
+                type="text"
+                value={searchPhone}
+                onChange={(e) => setSearchPhone(e.target.value)}
+                placeholder="전화번호 입력"
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355]"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => router.back()}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344]"
+              >
+                검색
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     );
   }
@@ -162,7 +200,7 @@ export default function OrderDetailPage() {
               <span className="text-base sm:text-lg font-medium text-gray-600">{order.orderNumber}</span>
             </div>
             <button
-              onClick={fetchOrder}
+              onClick={() => fetchOrder(order.customerPhone)}
               className="p-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
               title="새로고침"
             >

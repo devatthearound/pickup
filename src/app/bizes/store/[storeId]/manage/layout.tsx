@@ -1,5 +1,6 @@
 'use client';
 
+import axiosInstance from '@/lib/axios-interceptor';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -27,7 +28,7 @@ export default function StoreLayout({
   }, [isMenuOpen]);
 
   const menuItems = [
-    { href: '/bizes', label: '대시보드', exact: true },
+    { href: `/bizes/store/${storeId}/manage/orders`, label: '주문 관리', exact: true },
     { href: `/bizes/store/${storeId}/manage/menu`, label: '메뉴 관리' },
     { href: `/bizes/store/${storeId}/manage/benefits`, label: '혜택 관리' },
     { href: `/bizes/store/${storeId}/manage/setup`, label: '매장 설정' },
@@ -40,9 +41,20 @@ export default function StoreLayout({
     return pathname.startsWith(href);
   };
 
-  const handleLogout = () => {
-    // 로그아웃 로직 구현 필요
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      const response = await axiosInstance.post('http://localhost:3001/api/auth/logout');
+
+      if (response.status !== 201) {
+        throw new Error('로그아웃에 실패했습니다.');
+      }
+
+      // 로그아웃 성공 시 로그인 페이지로 이동
+      router.push('/login');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+      alert('로그아웃에 실패했습니다. 다시 시도해주세요.');
+    }
   };
 
   return (
@@ -89,12 +101,12 @@ export default function StoreLayout({
         </div>
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-800">
           <div className="space-y-2">
-            <Link
+            {/* <Link
               href="/customer-service"
               className="block w-full px-4 py-2 text-center text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
             >
               고객센터
-            </Link>
+            </Link> */}
             <button
               onClick={handleLogout}
               className="block w-full px-4 py-2 text-center text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
@@ -105,8 +117,8 @@ export default function StoreLayout({
         </div>
       </div>
 
-      {/* 메인 컨텐츠 */}
-      <div className="w-full lg:ml-64 lg:w-[calc(100%-16rem)]">
+      {/* 메인 콘텐츠 */}
+      <div className="lg:ml-64">
         {children}
       </div>
     </div>

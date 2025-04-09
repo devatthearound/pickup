@@ -1,5 +1,6 @@
 'use client';
 
+import axiosInstance from '@/lib/axios-interceptor';
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
@@ -54,11 +55,11 @@ export default function BenefitsPage() {
   useEffect(() => {
     const fetchBenefits = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/stores/${storeId}/benefits`);
-        if (!response.ok) {
+        const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}/benefits`);
+        if (response.status !== 200) {
           throw new Error('혜택 목록을 불러오는데 실패했습니다');
         }
-        const apiResponse: ApiResponse<PaginatedResponse<Benefit>> = await response.json();
+        const apiResponse: ApiResponse<PaginatedResponse<Benefit>> = await response.data;
         setBenefits(apiResponse.data.data || []);
       } catch (error) {
         console.error('혜택 목록 로딩 실패:', error);
@@ -83,21 +84,14 @@ export default function BenefitsPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/benefits`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newBenefit),
-        credentials: 'include'
-      });
+      const response = await axiosInstance.post(`http://localhost:3001/api/stores/${storeId}/benefits`, newBenefit);
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response.status !== 201) {
+        const errorData = await response.data;
         throw new Error(errorData.message || '혜택 추가에 실패했습니다');
       }
 
-      const apiResponse: ApiResponse<Benefit> = await response.json();
+      const apiResponse: ApiResponse<Benefit> = await response.data;
       setBenefits([...benefits, apiResponse.data]);
       setNewBenefit({
         title: '',
@@ -117,16 +111,13 @@ export default function BenefitsPage() {
   // 혜택 삭제
   const deleteBenefit = async (benefitId: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/benefits/${benefitId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      });
+      const response = await axiosInstance.delete(`http://localhost:3001/api/stores/benefits/${benefitId}`);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('혜택 삭제에 실패했습니다');
       }
 
-      const apiResponse: ApiResponse<{ id: number; deleted: boolean }> = await response.json();
+      const apiResponse: ApiResponse<{ id: number; deleted: boolean }> = await response.data;
       if (apiResponse.data.deleted) {
         setBenefits(benefits.filter(benefit => benefit.id !== benefitId));
         toast.success('혜택이 삭제되었습니다');
@@ -140,21 +131,14 @@ export default function BenefitsPage() {
   // 혜택 수정
   const updateBenefit = async (benefitId: number, updatedBenefit: Partial<Benefit>) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/benefits/${benefitId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedBenefit),
-        credentials: 'include'
-      });
+      const response = await axiosInstance.patch(`http://localhost:3001/api/stores/benefits/${benefitId}`, updatedBenefit);
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response.status !== 200) {
+        const errorData = await response.data;
         throw new Error(errorData.message || '혜택 수정에 실패했습니다');
       }
 
-      const apiResponse: ApiResponse<Benefit> = await response.json();
+      const apiResponse: ApiResponse<Benefit> = await response.data;
       
       // 기존 혜택의 모든 데이터를 유지하면서 isActive만 업데이트
       setBenefits(benefits.map(benefit => 

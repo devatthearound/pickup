@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import StoreProfileImage from '@/components/StoreProfileImage';
 import { useStoreProfile } from '@/store/useStoreProfile';
+import axiosInstance from '@/lib/axios-interceptor';
 
 interface BusinessHours {
   day: string;
@@ -103,20 +104,18 @@ export default function StoreSetupPage() {
   const fetchStoreInfo = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}`, {
-        method: 'GET',
+      const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        credentials: 'include'
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('매장 정보를 불러오는데 실패했습니다');
       }
 
-      const data = await response.json();
+      const data = await response.data;
       
       if (data.success && data.data) {
         const storeData = data.data;
@@ -150,20 +149,18 @@ export default function StoreSetupPage() {
     setIsHoursLoading(true);
     setHasOperatingHoursData(false);
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/operating-hours`, {
-        method: 'GET',
+      const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}/operating-hours`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        credentials: 'include'
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('영업시간 정보를 불러오는데 실패했습니다');
       }
 
-      const data = await response.json();
+      const data = await response.data;
 
       if (data.success && data.data && data.data.operatingHours && data.data.operatingHours.length > 0) {
         const updatedHours = [...businessHours];
@@ -225,18 +222,18 @@ export default function StoreSetupPage() {
         formData.append('bannerImage', bannerFile);
       }
 
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}`, {
-        method: 'PATCH',
-        body: formData,
-        credentials: 'include'
+      const response = await axiosInstance.patch(`http://localhost:3001/api/stores/${storeId}`,formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response.status !== 200) {
+        const errorData = await response.data;
         throw new Error(errorData.message || '스토어 정보 업데이트에 실패했습니다');
       }
 
-      const responseData: UpdateStoreResponse = await response.json();
+      const responseData: UpdateStoreResponse = await response.data;
       
       if (responseData.success) {
         // 업데이트된 데이터로 상태 갱신
@@ -270,22 +267,14 @@ export default function StoreSetupPage() {
         isDayOff: !hour.isOpen
       }));
 
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/operating-hours/bulk`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(operatingHoursData),
-        credentials: 'include'
-      });
+      const response = await axiosInstance.post(`http://localhost:3001/api/stores/${storeId}/operating-hours/bulk`, operatingHoursData);
 
-      if (!response.ok) {
-        const errorData = await response.json();
+      if (response.status !== 201) {
+        const errorData = await response.data;
         throw new Error(errorData.message || '영업시간 업데이트에 실패했습니다');
       }
 
-      const responseData = await response.json();
+      const responseData = await response.data;
 
       if (responseData.success !== false) {
         toast.success('영업시간이 성공적으로 업데이트되었습니다.');
@@ -305,20 +294,18 @@ export default function StoreSetupPage() {
   const fetchSpecialDays = async () => {
     setIsSpecialDaysLoading(true);
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/special-days`, {
-        method: 'GET',
+      const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}/special-days`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        credentials: 'include'
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error('특별 영업일/휴무일 정보를 불러오는데 실패했습니다');
       }
 
-      const data = await response.json();
+      const data = await response.data;
       
       if (data.success && data.data) {
         setSpecialDays(data.data.map((item: any) => ({
@@ -368,21 +355,14 @@ export default function StoreSetupPage() {
         Object.assign(payload, { reason: newSpecialDay.reason });
       }
 
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/special-days`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(payload),
-        credentials: 'include'
-      });
+      const response = await axiosInstance.post(`http://localhost:3001/api/stores/${storeId}/special-days`, payload);
 
-      if (!response.ok) {
-        throw new Error('특별 영업일/휴무일 추가에 실패했습니다');
+      if (response.status !== 201) {
+        const errorData = await response.data;
+        throw new Error(errorData.message || '특별 영업일/휴무일 추가에 실패했습니다');
       }
 
-      const data = await response.json();
+      const data = await response.data;
       
       if (data.success) {
         toast.success('특별 영업일/휴무일이 추가되었습니다');
@@ -402,19 +382,18 @@ export default function StoreSetupPage() {
   // 특별 영업일/휴무일 삭제
   const deleteSpecialDay = async (id: number) => {
     try {
-      const response = await fetch(`http://localhost:3001/api/stores/${storeId}/special-days/${id}`, {
-        method: 'DELETE',
+      const response = await axiosInstance.delete(`http://localhost:3001/api/stores/${storeId}/special-days/${id}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Content-Type': 'application/json',
         },
-        credentials: 'include'
       });
 
-      if (!response.ok) {
-        throw new Error('특별 영업일/휴무일 삭제에 실패했습니다');
+      if (response.status !== 200) {
+        const errorData = await response.data;
+        throw new Error(errorData.message || '특별 영업일/휴무일 삭제에 실패했습니다');
       }
 
-      const data = await response.json();
+      const data = await response.data;
       
       if (data.success) {
         toast.success('특별 영업일/휴무일이 삭제되었습니다');

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useStoreProfile } from '@/store/useStoreProfile';
 import StoreProfileImage from '@/components/StoreProfileImage';
 import { useParams } from 'next/navigation';
+import axiosInstance from '@/lib/axios-interceptor';
 
 interface StoreInfo {
   id: number;
@@ -70,8 +71,8 @@ export default function StorePage() {
   useEffect(() => {
     const fetchStoreInfo = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/stores/${storeId}`);
-        const data = await response.json();
+        const response = await axiosInstance.get(`http://localhost:3001/api/stores/${storeId}`);
+        const data = await response.data;
         setStoreInfo(data);
         setImageUrl(data.logoImageUrl);
       } catch (error) {
@@ -86,8 +87,8 @@ export default function StorePage() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch(`http://localhost:3001/api/menu-categories/store/${storeId}`);
-        const data = await response.json();
+        const response = await axiosInstance.get(`http://localhost:3001/api/menu-categories/store/${storeId}`);
+        const data = await response.data;
         if (data.success && data.data.length > 0) {
           setCategories(data.data);
           setSelectedCategory(data.data[0].id);
@@ -111,8 +112,8 @@ export default function StorePage() {
       if (!selectedCategory) return;
       
       try {
-        const response = await fetch(`http://localhost:3001/api/menu-items/category/${selectedCategory}`);
-        const data = await response.json();
+        const response = await axiosInstance.get(`http://localhost:3001/api/menu-items/category/${selectedCategory}`);
+        const data = await response.data;
         if (data.success) {
           setMenuItems(data.data || []);
         } else {

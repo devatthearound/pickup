@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/lib/axios-interceptor';
 
 interface RegisterFormData {
   email: string;
@@ -63,24 +64,19 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      const response = await axiosInstance.post('http://localhost:3001/api/auth/register', 
+        {
           email: formData.email,
           password: formData.password,
           phone: formData.phone,
           first_name: formData.first_name,
           last_name: formData.last_name,
           role: 'owner'
-        }),
-      });
+        });
 
-      const data = await response.json();
+      const data = await response.data;
 
-      if (!response.ok) {
+      if (response.status !== 201) {
         throw new Error(data.message || '회원가입 중 오류가 발생했습니다.');
       }
 

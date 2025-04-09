@@ -1,3 +1,4 @@
+import axiosInstance from '@/lib/axios-interceptor';
 import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:3001/api';
@@ -66,33 +67,30 @@ export const menuService = {
     storeId?: number;
   }) => {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    const response = await fetch(`${API_BASE_URL}/menu-categories${queryString}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories${queryString}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getCategoryById: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-categories/${id}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getStoreCategories: async (storeId: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-categories/store/${storeId}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories/store/${storeId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   createCategory: async (storeId: number, data: {
@@ -100,38 +98,23 @@ export const menuService = {
     displayOrder?: number;
     isActive?: boolean;
   }) => {
-    const response = await fetch(`${API_BASE_URL}/menu-categories/store/${storeId}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`${API_BASE_URL}/menu-categories/store/${storeId}`, data);
+    return response.data;
   },
 
   updateCategory: async (id: number, data: Partial<MenuCategory>) => {
-    const response = await fetch(`${API_BASE_URL}/menu-categories/${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.patch(`${API_BASE_URL}/menu-categories/${id}`, data);
+    return response.data;
   },
 
   deleteCategory: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-categories/${id}`, {
+    const response = await axiosInstance.delete(`${API_BASE_URL}/menu-categories/${id}`, {
       method: 'DELETE',
-      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   // 메뉴 아이템 관련 API
@@ -146,114 +129,91 @@ export const menuService = {
     isRecommended?: boolean;
   }) => {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    const response = await fetch(`${API_BASE_URL}/menu-items${queryString}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items${queryString}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getMenuItem: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getStoreMenuItems: async (storeId: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/store/${storeId}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/store/${storeId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getCategoryMenuItems: async (categoryId: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/category/${categoryId}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/category/${categoryId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getPopularMenuItems: async (storeId: number, limit: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/popular/store/${storeId}?limit=${limit}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/popular/store/${storeId}?limit=${limit}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getNewMenuItems: async (storeId: number, limit: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/new/store/${storeId}?limit=${limit}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/new/store/${storeId}?limit=${limit}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getRecommendedMenuItems: async (storeId: number, limit: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/recommended/store/${storeId}?limit=${limit}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/recommended/store/${storeId}?limit=${limit}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   createMenuItem: async (storeId: number, data: FormData) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/store/${storeId}`, {
-      method: 'POST',
-      credentials: 'include',
-      body: data, // FormData는 자동으로 Content-Type을 설정
-    });
-    return response.json();
+    const response = await axiosInstance.post(`${API_BASE_URL}/menu-items/store/${storeId}`, data);
+    return response.data;
   },
 
   updateMenuItem: async (id: number, data: FormData) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      body: data, // FormData는 자동으로 Content-Type을 설정
-    });
-    return response.json();
+    const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/${id}`, data);
+    return response.data;
   },
 
   deleteMenuItem: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}`, {
+    const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/${id}`, {
       method: 'DELETE',
-      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   updateMenuStock: async (id: number, stockQuantity: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${id}/stock`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ stockQuantity }),
-    });
-    return response.json();
+    const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/${id}/stock`, stockQuantity);
+    return response.data;
   },
 
   // 옵션 관련 API
@@ -264,150 +224,98 @@ export const menuService = {
     isRequired?: boolean;
   }) => {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    const response = await fetch(`${API_BASE_URL}/options/groups${queryString}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/options/groups${queryString}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getOptionGroup: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/options/groups/${id}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/options/groups/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   createOptionGroup: async (storeId: number, data: Partial<OptionGroup>) => {
-    const response = await fetch(`${API_BASE_URL}/options/groups/store/${storeId}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`${API_BASE_URL}/options/groups/store/${storeId}`, data);
+    return response.data;
   },
 
   updateOptionGroup: async (id: number, data: Partial<OptionGroup>) => {
-    const response = await fetch(`${API_BASE_URL}/options/groups/${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.patch(`${API_BASE_URL}/options/groups/${id}`, data);
+    return response.data;
   },
 
   deleteOptionGroup: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/options/groups/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
+    const response = await axiosInstance.delete(`${API_BASE_URL}/options/groups/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   // 옵션 아이템 관련 API
   getOptionItems: async (groupId: number) => {
-    const response = await fetch(`${API_BASE_URL}/options/items/group/${groupId}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/options/items/group/${groupId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   createOptionItem: async (groupId: number, data: Partial<OptionItem>) => {
-    const response = await fetch(`${API_BASE_URL}/options/items/group/${groupId}`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`${API_BASE_URL}/options/items/group/${groupId}`, data);
+    return response.data;
   },
 
   updateOptionItem: async (id: number, data: Partial<OptionItem>) => {
-    const response = await fetch(`${API_BASE_URL}/options/items/${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.patch(`${API_BASE_URL}/options/items/${id}`, data);
+    return response.data;
   },
 
   deleteOptionItem: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/options/items/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
+    const response = await axiosInstance.delete(`${API_BASE_URL}/options/items/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   // 메뉴-옵션 연결 관련 API
   getMenuOptionGroups: async (menuId: number) => {
-    const response = await fetch(`${API_BASE_URL}/options/menu-option-groups/menu/${menuId}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/options/menu-option-groups/menu/${menuId}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   createMenuOptionGroup: async (data: { menuId: number; groupId: number }) => {
-    const response = await fetch(`${API_BASE_URL}/options/menu-option-groups`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`${API_BASE_URL}/options/menu-option-groups`, data);
+    return response.data;
   },
 
   updateMenuOptionGroup: async (id: number, data: { displayOrder?: number }) => {
-    const response = await fetch(`${API_BASE_URL}/options/menu-option-groups/${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.patch(`${API_BASE_URL}/options/menu-option-groups/${id}`, data);
+    return response.data;
   },
 
   deleteMenuOptionGroup: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/options/menu-option-groups/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
+    const response = await axiosInstance.delete(`${API_BASE_URL}/options/menu-option-groups/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   // 메뉴 가용성 관련 API
@@ -416,13 +324,12 @@ export const menuService = {
     isAvailable?: boolean;
   }) => {
     const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-    const response = await fetch(`${API_BASE_URL}/menu-items/${menuId}/availability${queryString}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/${menuId}/availability${queryString}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   createMenuAvailability: async (menuId: number, data: {
@@ -431,36 +338,26 @@ export const menuService = {
     endTime: string;
     isAvailable: boolean;
   }) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${menuId}/availability`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.post(`${API_BASE_URL}/menu-items/${menuId}/availability`, data);
+    return response.data;
   },
 
   deleteAllMenuAvailability: async (menuId: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/${menuId}/availability`, {
-      method: 'DELETE',
-      credentials: 'include',
+    const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/${menuId}/availability`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   getAvailabilityById: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/availability/${id}`, {
-      credentials: 'include',
+    const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/availability/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 
   updateAvailability: async (id: number, data: {
@@ -468,25 +365,16 @@ export const menuService = {
     endTime?: string;
     isAvailable?: boolean;
   }) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/availability/${id}`, {
-      method: 'PATCH',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+    const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/availability/${id}`, data);
+    return response.data;
   },
 
   deleteAvailability: async (id: number) => {
-    const response = await fetch(`${API_BASE_URL}/menu-items/availability/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
+    const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/availability/${id}`, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    return response.json();
+    return response.data;
   },
 }; 

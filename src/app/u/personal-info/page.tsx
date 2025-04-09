@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import axiosInstance from '@/lib/axios-interceptor';
 
 export default function PersonalInfoPage() {
   const router = useRouter();
@@ -77,27 +78,22 @@ export default function PersonalInfoPage() {
         specialInstructions: ''
       }));
 
-      const response = await fetch('http://localhost:3001/api/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          storeId: storeId,
-          items: orderItems,
-          paymentMethod: 'cash',
-          guestInfo: {
-            name: name,
-            phone: phone
-          }
-        }),
+      const response = await axiosInstance.post('http://localhost:3001/api/orders',{
+        storeId: storeId,
+        items: orderItems,
+        paymentMethod: 'cash',
+        guestInfo: {
+          name: name,
+          phone: phone
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('주문 생성에 실패했습니다.');
+      if (response.status !== 201) {
+        const errorData = await response.data;
+        throw new Error(errorData.message || '주문 생성에 실패했습니다.');
       }
 
-      const result = await response.json();
+      const result = await response.data;
       console.log('주문 응답:', result);
       
       if (!result.success || !result.data) {

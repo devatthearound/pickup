@@ -1,5 +1,6 @@
 'use client';
 
+import axiosInstance from '@/lib/axios-interceptor';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -32,25 +33,17 @@ export default function StoreMainPage() {
 
   const fetchStores = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/stores/owner/my-stores', {
+      const response = await axiosInstance.get('http://localhost:3001/api/stores/owner/my-stores', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // 쿠키 기반 인증을 사용
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          router.push('/login');
-          return;
-        }
-        throw new Error('스토어 목록을 불러오는데 실패했습니다.');
-      }
 
-      const result: ApiResponse = await response.json();
+      const result: ApiResponse = await response.data;
       
-      if (!result.success) {
+      if (response.status !== 200) {
         throw new Error(result.message || '스토어 목록을 불러오는데 실패했습니다.');
       }
 
@@ -177,7 +170,7 @@ export default function StoreMainPage() {
                 </div>
 
                 <button
-                  onClick={() => router.push(`/bizes/store/${store.id}/manage`)}
+                  onClick={() => router.push(`/bizes/store/${store.id}/manage/orders`)}
                   className="mt-4 w-full py-2 px-4 bg-[#FF7355] text-white rounded-lg font-medium hover:bg-[#FF6344] transition-colors"
                 >
                   스토어 관리하기
