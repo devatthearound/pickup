@@ -72,7 +72,7 @@ export default function OrderDetailPage() {
   const fetchOrder = async (phone: string) => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/orders/by-number-and-phone/${orderNumber}/${phone}`);
+      const response = await axiosInstance.get(`/orders/by-number-and-phone/${orderNumber}/${phone}`);
       if (response.status !== 200) {
         const errorData = await response.data;
         throw new Error(errorData.message || '주문을 찾을 수 없습니다.');

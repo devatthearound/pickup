@@ -105,7 +105,7 @@ export default function StoreSetupPage() {
   const fetchStoreInfo = async () => {
     setIsLoading(true);
     try {
-      const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}`, {
+      const response = await axiosInstance.get(`/stores/${storeId}`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -150,7 +150,7 @@ export default function StoreSetupPage() {
     setIsHoursLoading(true);
     setHasOperatingHoursData(false);
     try {
-      const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/operating-hours`, {
+      const response = await axiosInstance.get(`/stores/${storeId}/operating-hours`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -223,7 +223,7 @@ export default function StoreSetupPage() {
         formData.append('bannerImage', bannerFile);
       }
 
-      const response = await axiosInstance.patch(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}`,formData, {
+      const response = await axiosInstance.patch(`/stores/${storeId}`,formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
@@ -268,7 +268,7 @@ export default function StoreSetupPage() {
         isDayOff: !hour.isOpen
       }));
 
-      const response = await axiosInstance.post(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/operating-hours/bulk`, operatingHoursData);
+      const response = await axiosInstance.post(`/stores/${storeId}/operating-hours/bulk`, operatingHoursData);
 
       if (response.status !== 201) {
         const errorData = await response.data;
@@ -295,7 +295,7 @@ export default function StoreSetupPage() {
   const fetchSpecialDays = async () => {
     setIsSpecialDaysLoading(true);
     try {
-      const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/special-days`, {
+      const response = await axiosInstance.get(`/stores/${storeId}/special-days`, {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -356,7 +356,7 @@ export default function StoreSetupPage() {
         Object.assign(payload, { reason: newSpecialDay.reason });
       }
 
-      const response = await axiosInstance.post(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/special-days`, payload);
+      const response = await axiosInstance.post(`/stores/${storeId}/special-days`, payload);
 
       if (response.status !== 201) {
         const errorData = await response.data;
@@ -383,7 +383,7 @@ export default function StoreSetupPage() {
   // 특별 영업일/휴무일 삭제
   const deleteSpecialDay = async (id: number) => {
     try {
-      const response = await axiosInstance.delete(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/special-days/${id}`, {
+      const response = await axiosInstance.delete(`/stores/${storeId}/special-days/${id}`, {
         headers: {
           'Content-Type': 'application/json',
         },

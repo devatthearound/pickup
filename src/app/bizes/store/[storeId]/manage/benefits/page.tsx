@@ -53,7 +53,7 @@ export default function BenefitsPage() {
   useEffect(() => {
     const fetchBenefits = async () => {
       try {
-        const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/benefits`);
+        const response = await axiosInstance.get(`/stores/${storeId}/benefits`);
         if (response.status !== 200) {
           throw new Error('혜택 목록을 불러오는데 실패했습니다');
         }
@@ -82,7 +82,7 @@ export default function BenefitsPage() {
     }
 
     try {
-      const response = await axiosInstance.post(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/benefits`, newBenefit);
+      const response = await axiosInstance.post(`/stores/${storeId}/benefits`, newBenefit);
 
       if (response.status !== 201) {
         const errorData = await response.data;
@@ -109,7 +109,7 @@ export default function BenefitsPage() {
   // 혜택 삭제
   const deleteBenefit = async (benefitId: number) => {
     try {
-      const response = await axiosInstance.delete(`https://api.xn--5h5bx6z0e.kr/api/stores/benefits/${benefitId}`);
+      const response = await axiosInstance.delete(`/stores/benefits/${benefitId}`);
 
       if (response.status !== 200) {
         throw new Error('혜택 삭제에 실패했습니다');
@@ -129,7 +129,7 @@ export default function BenefitsPage() {
   // 혜택 수정
   const updateBenefit = async (benefitId: number, updatedBenefit: Partial<Benefit>) => {
     try {
-      const response = await axiosInstance.patch(`https://api.xn--5h5bx6z0e.kr/api/stores/benefits/${benefitId}`, updatedBenefit);
+      const response = await axiosInstance.patch(`/stores/benefits/${benefitId}`, updatedBenefit);
 
       if (response.status !== 200) {
         const errorData = await response.data;

@@ -78,7 +78,7 @@ export default function PersonalInfoPage() {
         specialInstructions: ''
       }));
 
-      const response = await axiosInstance.post('https://api.xn--5h5bx6z0e.kr/api/orders',{
+      const response = await axiosInstance.post('/orders',{
         storeId: storeId,
         items: orderItems,
         paymentMethod: 'cash',

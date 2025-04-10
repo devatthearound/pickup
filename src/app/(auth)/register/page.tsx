@@ -64,7 +64,7 @@ export default function RegisterPage() {
     }
 
     try {
-      const response = await axiosInstance.post('https://api.xn--5h5bx6z0e.kr/api/auth/register', 
+      const response = await axiosInstance.post('/auth/register', 
         {
           email: formData.email,
           password: formData.password,

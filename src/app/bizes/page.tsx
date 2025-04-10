@@ -33,7 +33,7 @@ export default function StoreMainPage() {
 
   const fetchStores = async () => {
     try {
-      const response = await axiosInstance.get('https://api.xn--5h5bx6z0e.kr/api/stores/owner/my-stores');
+      const response = await axiosInstance.get('/stores/owner/my-stores');
 
 
       const result: ApiResponse = await response.data;

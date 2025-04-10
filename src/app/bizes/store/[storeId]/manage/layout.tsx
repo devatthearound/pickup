@@ -43,7 +43,7 @@ export default function StoreLayout({
 
   const handleLogout = async () => {
     try {
-      const response = await axiosInstance.post('https://api.xn--5h5bx6z0e.kr/api/auth/logout');
+      const response = await axiosInstance.post('/auth/logout');
 
       if (response.status !== 201) {
         throw new Error('로그아웃에 실패했습니다.');

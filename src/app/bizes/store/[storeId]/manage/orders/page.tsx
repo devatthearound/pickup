@@ -49,7 +49,7 @@ export default function OrdersList() {
         }
       });
 
-      const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/orders?${queryString}`, {
+      const response = await axiosInstance.get(`/orders?${queryString}`, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -87,7 +87,7 @@ export default function OrdersList() {
           return; // 거부 사유가 없으면 취소
         }
         
-        const response = await axiosInstance.patch(`https://api.xn--5h5bx6z0e.kr/api/orders/${orderId}/status`, { 
+        const response = await axiosInstance.patch(`/orders/${orderId}/status`, { 
           status: newStatus,
           rejectionReason: reason
         });
@@ -103,7 +103,7 @@ export default function OrdersList() {
       }
 
       // 일반 상태 변경
-      const response = await axiosInstance.patch(`https://api.xn--5h5bx6z0e.kr/api/orders/${orderId}/status`,{
+      const response = await axiosInstance.patch(`/orders/${orderId}/status`,{
         status: newStatus
       });
 

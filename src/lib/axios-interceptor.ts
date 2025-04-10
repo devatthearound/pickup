@@ -2,8 +2,8 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: '',
-  withCredentials: true, // 쿠키 전송을 위해 필요
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr/api',
+  withCredentials: true,
 });
 
 // 응답 인터셉터

@@ -90,7 +90,7 @@ export default function StoreRegisterPage() {
         formDataToSend.append('bannerImage', formData.bannerImage);
       }
 
-      const response = await axiosInstance.post('https://api.xn--5h5bx6z0e.kr/api/stores', formDataToSend, {
+      const response = await axiosInstance.post('/stores', formDataToSend, {
         headers: {
           'Content-Type': 'multipart/form-data',
         }

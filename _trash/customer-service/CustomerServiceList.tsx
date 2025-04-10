@@ -39,7 +39,7 @@ export default function CustomerServiceList({ storeId }: CustomerServiceListProp
   useEffect(() => {
     const fetchInquiries = async () => {
       try {
-        const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/stores/${storeId}/inquiries`);
+        const response = await axiosInstance.get(`/stores/${storeId}/inquiries`);
         if (response.status === 200) {
           setInquiries(response.data.data);
         }
