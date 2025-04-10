@@ -46,7 +46,7 @@ export default function StoreOrdersHistoryPage() {
         }
       });
 
-      const response = await axiosInstance.get(`http://13.124.138.71:3001/api/orders?${queryString}`, {
+      const response = await axiosInstance.get(`https://api.xn--5h5bx6z0e.kr/api/orders?${queryString}`, {
         headers: {
           'Content-Type': 'application/json',
         },
