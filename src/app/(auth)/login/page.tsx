@@ -37,6 +37,7 @@ export default function LoginPage() {
       // 로그인 성공 시 스토어 목록 페이지로 이동
       router.push('/bizes');
     } catch (err) {
+      console.error(err); // Add this for debugging
       setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
