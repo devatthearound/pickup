@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr',
   withCredentials: true,
 });
 
