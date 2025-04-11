@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { HiPlus, HiPencil, HiTrash } from 'react-icons/hi';
-import { menuService, OptionGroup, OptionItem } from '../services/menuService';
+import { OptionGroup, OptionItem, useMenuService } from '../services/menuService';
 import { toast } from 'react-hot-toast';
 import OptionGroupModal from './OptionGroupModal';
 import OptionItemModal from './OptionItemModal';
@@ -13,6 +13,7 @@ interface OptionManagementProps {
 }
 
 export default function OptionManagement({ storeId, menuId }: OptionManagementProps) {
+  const menuService = useMenuService();
   const [optionGroups, setOptionGroups] = useState<OptionGroup[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<OptionGroup | null>(null);
   const [optionItems, setOptionItems] = useState<OptionItem[]>([]);
