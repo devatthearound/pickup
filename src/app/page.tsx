@@ -9,7 +9,7 @@ export default function Home() {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full px-4">
         {/* 고객용 카드 */}
-        <a href="/customer" className="group">
+        <a href="/u/store/10" className="group">
           <div className="bg-white rounded-2xl shadow-lg p-8 transition-all duration-200 hover:shadow-xl hover:scale-105">
             <div className="aspect-square rounded-xl bg-coral-50 flex items-center justify-center mb-6">
               <svg className="w-24 h-24 text-coral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -40,7 +40,7 @@ export default function Home() {
       </div>
 
       {/* 슈퍼관리자 접근 버튼 */}
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <a href="/admin/customer-service" className="group">
           <div className="bg-white rounded-xl shadow p-4 transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-coral-50 flex items-center justify-center">
@@ -54,7 +54,7 @@ export default function Home() {
             </div>
           </div>
         </a>
-      </div>
+      </div> */}
     </div>
   );
 }
