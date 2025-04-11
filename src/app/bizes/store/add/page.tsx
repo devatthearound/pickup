@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 
 interface StoreFormData {
   name: string;
@@ -22,6 +22,8 @@ interface StoreFormData {
 
 export default function StoreRegisterPage() {
   const router = useRouter();
+  const axiosInstance = useAxios();
+
   const [formData, setFormData] = useState<StoreFormData>({
     name: '',
     englishName: '',

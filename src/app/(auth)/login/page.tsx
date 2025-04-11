@@ -2,10 +2,13 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axiosInstance from '@/lib/axios-interceptor';
-
+import { useAuth } from '@/contexts/AuthContext';
+import { setCookie } from '@/lib/useCookie';
+import { useAxios } from '@/hooks/useAxios';
 export default function LoginPage() {
+  const axiosInstance = useAxios();
   const router = useRouter();
+  const { setAccessToken } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -34,10 +37,20 @@ export default function LoginPage() {
         throw new Error(errorData.message || '이메일 또는 비밀번호가 올바르지 않습니다.');
       }
 
+      // 토큰 저장
+      const { accessToken, refreshToken } = response.data.data;
+      // 토큰 저장
+      setAccessToken(accessToken);
+      // 리프레시 토큰 저장
+      setCookie("refreshToken", refreshToken, {
+        path: '/',
+        expires: new Date(new Date().setDate(new Date().getDate() + 14)),
+      });
+
       // 로그인 성공 시 스토어 목록 페이지로 이동
       router.push('/bizes');
     } catch (err) {
-      console.error(err); // Add this for debugging
+      console.error(err);
       setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);

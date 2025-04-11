@@ -1,9 +1,9 @@
 'use client';
 
-import axiosInstance from '@/lib/axios-interceptor';
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { useAxios } from '@/hooks/useAxios';
 
 interface Benefit {
   id: number;
@@ -37,6 +37,7 @@ interface PaginatedResponse<T> {
 
 export default function BenefitsPage() {
   const { storeId } = useParams();
+  const axiosInstance = useAxios();
   const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -136,7 +137,6 @@ export default function BenefitsPage() {
         throw new Error(errorData.message || '혜택 수정에 실패했습니다');
       }
       
-      // 기존 혜택의 모든 데이터를 유지하면서 isActive만 업데이트
       setBenefits(benefits.map(benefit => 
         benefit.id === benefitId 
           ? { ...benefit, isActive: !benefit.isActive } 

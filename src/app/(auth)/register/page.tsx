@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 
 interface RegisterFormData {
   email: string;
@@ -15,6 +15,8 @@ interface RegisterFormData {
 
 export default function RegisterPage() {
   const router = useRouter();
+  const axiosInstance = useAxios();
+
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     password: '',

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useStoreProfile } from '@/store/useStoreProfile';
 import StoreProfileImage from '@/components/StoreProfileImage';
 import { useParams } from 'next/navigation';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 
 interface StoreInfo {
   id: number;
@@ -46,7 +46,8 @@ export default function StorePage() {
   const router = useRouter();
   const params = useParams();
   const storeId = params.storeId as string;
-  
+  const axiosInstance = useAxios();
+
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);

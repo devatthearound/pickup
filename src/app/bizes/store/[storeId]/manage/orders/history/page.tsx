@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 import { OrderStatus,Order } from '@/types/order';
 
 
@@ -26,6 +26,8 @@ export default function StoreOrdersHistoryPage() {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | ''>('');
+  const axiosInstance = useAxios();
+
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: ''

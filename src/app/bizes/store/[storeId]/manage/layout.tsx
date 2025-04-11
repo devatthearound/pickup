@@ -1,6 +1,6 @@
 'use client';
 
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -15,6 +15,8 @@ export default function StoreLayout({
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { storeId } = useParams();
+  const axiosInstance = useAxios();
+
   // 모바일에서 메뉴 열었을 때 스크롤 방지
   useEffect(() => {
     if (isMenuOpen) {

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 
 interface OrderItem {
   id: number;
@@ -68,6 +68,7 @@ export default function OrderDetailPage() {
   const [showStatusNotification, setShowStatusNotification] = useState(false);
   const [lastStatus, setLastStatus] = useState<string | null>(null);
   const [searchPhone, setSearchPhone] = useState('');
+  const axiosInstance = useAxios();
 
   const fetchOrder = async (phone: string) => {
     setLoading(true);

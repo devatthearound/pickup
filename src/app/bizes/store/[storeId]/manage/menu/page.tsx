@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { HiPlus, HiPencil, HiTrash, HiOutlineExclamationCircle } from 'react-icons/hi';
-import { menuService } from './services/menuService';
+import { useMenuService } from './services/menuService';
 import { toast } from 'react-hot-toast';
 import CategoryModal from './components/CategoryModal';
 import MenuModal from './components/MenuModal'
@@ -12,6 +12,7 @@ import type { MenuItem, MenuCategory } from './services/menuService';
 
 export default function MenuManagePage() {
   const { storeId } = useParams();
+  const menuService = useMenuService();
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');

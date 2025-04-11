@@ -1,9 +1,11 @@
 'use client';
 
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useAuth } from '@/contexts/AuthContext';
+
 interface Store {
   id: string;
   name: string;
@@ -23,18 +25,22 @@ interface ApiResponse {
 
 export default function StoreMainPage() {
   const router = useRouter();
+  const { accessToken } = useAuth();
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const axiosInstance = useAxios();
 
   useEffect(() => {
+    console.log('StoreMainPage 마운트, accessToken:', accessToken);
     fetchStores();
-  }, []);
+  }, [accessToken]);
 
   const fetchStores = async () => {
     try {
+      console.log('스토어 목록 요청 시작');
       const response = await axiosInstance.get('/stores/owner/my-stores');
-
+      console.log('스토어 목록 응답:', response.status);
 
       const result: ApiResponse = await response.data;
       
@@ -42,7 +48,8 @@ export default function StoreMainPage() {
         throw new Error(result.message || '스토어 목록을 불러오는데 실패했습니다.');
       }
 
-      setStores(result.data); // data 배열에서 스토어 목록 가져오기
+      setStores(result.data);
+      console.log('스토어 목록 설정 완료:', result.data.length);
     } catch (error) {
       console.error('스토어 정보 조회 실패:', error);
       setError(error instanceof Error ? error.message : '스토어 정보 조회에 실패했습니다.');

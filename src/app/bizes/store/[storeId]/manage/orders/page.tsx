@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 import { OrderStatus, Order, PaymentStatus } from '@/types/order';
 import { useParams } from 'next/navigation';
 
@@ -25,7 +25,8 @@ export default function OrdersList() {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | ''>(OrderStatus.PENDING);
-  
+  const axiosInstance = useAxios();
+
   // 오늘 날짜 설정
   const today = new Date();
   const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString().split('T')[0];

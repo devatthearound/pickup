@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import StoreProfileImage from '@/components/StoreProfileImage';
 import { useStoreProfile } from '@/store/useStoreProfile';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 import Image from 'next/image';
 
 interface BusinessHours {
@@ -56,6 +56,8 @@ interface UpdateStoreResponse {
 
 export default function StoreSetupPage() {
   const { storeId } = useParams();
+  const axiosInstance = useAxios();
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isHoursLoading, setIsHoursLoading] = useState(true);

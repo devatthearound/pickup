@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 
 export default function PersonalInfoPage() {
   const router = useRouter();
@@ -14,6 +14,7 @@ export default function PersonalInfoPage() {
   const [storeId, setStoreId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const axiosInstance = useAxios();
 
   useEffect(() => {
     // 현재 활성화된 가게 ID 가져오기

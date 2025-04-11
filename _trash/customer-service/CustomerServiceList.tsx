@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import axiosInstance from '@/lib/axios-interceptor';
+import { useAxios } from '@/hooks/useAxios';
 
 interface Inquiry {
   id: string;
@@ -35,6 +35,7 @@ export default function CustomerServiceList({ storeId }: CustomerServiceListProp
   });
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  const axiosInstance = useAxios();
 
   useEffect(() => {
     const fetchInquiries = async () => {
