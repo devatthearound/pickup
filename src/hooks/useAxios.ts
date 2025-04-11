@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { getCookie, setCookie, deleteCookie } from '@/lib/useCookie';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://www.xn--5h5bx6z0e.kr';
 
 export const useAxios = () => {
   const { accessToken } = useAuth();
