@@ -34,8 +34,8 @@ export default function CartPage() {
     const loadCartData = () => {
       if (typeof window !== 'undefined') {
         // 현재 주문 중인 가게 ID 가져오기
-        const currentStoreId = localStorage.getItem('activeStoreId');
-        console.log('activeStoreId:', currentStoreId); // 디버깅용 로그
+        const currentStoreId = localStorage.getItem('currentStoreId');
+        console.log('currentStoreId:', currentStoreId); // 디버깅용 로그
         
         if (currentStoreId) {
           setStoreId(currentStoreId);
@@ -58,7 +58,7 @@ export default function CartPage() {
           }
         } else {
           // 가게 ID가 없는 경우 이전 페이지로 리다이렉트
-          console.log('No activeStoreId found in localStorage'); // 디버깅용 로그
+          console.log('No currentStoreId found in localStorage'); // 디버깅용 로그
           setTimeout(() => {
             router.back();
           }, 100); // 100ms 후에 리다이렉트

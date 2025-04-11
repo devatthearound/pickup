@@ -18,13 +18,13 @@ export default function PersonalInfoPage() {
 
   useEffect(() => {
     // 현재 활성화된 가게 ID 가져오기
-    const activeStoreId = localStorage.getItem('activeStoreId');
-    if (!activeStoreId) {
+    const currentStoreId = localStorage.getItem('currentStoreId');
+    if (!currentStoreId) {
       setError('가게 정보를 찾을 수 없습니다.');
       return;
     }
 
-    const storeIdNum = parseInt(activeStoreId);
+    const storeIdNum = parseInt(currentStoreId);
     if (isNaN(storeIdNum)) {
       setError('잘못된 가게 정보입니다.');
       return;
@@ -33,7 +33,7 @@ export default function PersonalInfoPage() {
     setStoreId(storeIdNum);
     
     // 해당 가게의 장바구니 데이터 가져오기
-    const savedCart = localStorage.getItem(`cart_${activeStoreId}`);
+    const savedCart = localStorage.getItem(`cart_${currentStoreId}`);
     if (!savedCart) {
       setError('장바구니가 비어있습니다.');
       return;
