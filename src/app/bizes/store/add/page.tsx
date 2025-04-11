@@ -29,7 +29,7 @@ export default function StoreRegisterPage() {
     englishName: '',
     businessRegistrationNumber: '',
     businessRegistrationFile: null,
-    categoryId: '',
+    categoryId: '1',
     address: '',
     addressDetail: '',
     phone: '',
@@ -190,7 +190,7 @@ export default function StoreRegisterPage() {
                 />
               </div>
 
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">업종 분류</label>
                 <select
                   name="categoryId"
@@ -205,7 +205,7 @@ export default function StoreRegisterPage() {
                   <option value="3">일식</option>
                   <option value="4">카페</option>
                 </select>
-              </div>
+              </div> */}
             </div>
           </div>
 
