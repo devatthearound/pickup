@@ -105,7 +105,7 @@ export default function PersonalInfoPage() {
       localStorage.removeItem(`cart_${storeId}`);
       
       // 주문 ID 저장하고 팝업 표시
-      router.push(`/u/order/${result.data.id}`);
+      router.push(`/u/order/${result.data.orderNumber}`);
 
     } catch (error) {
       console.error('주문 에러:', error);
