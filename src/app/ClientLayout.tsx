@@ -14,6 +14,11 @@ export default function ClientLayout({
 
     // React Native WebView에서 메시지를 수신하는 함수
     const handleMessage = (event: MessageEvent) => {
+      // React Native WebView에서 온 메시지인지 확인
+      if (!window.ReactNativeWebView) {
+        return;
+      }
+
       console.log('Received message:', event.data);
       
       try {

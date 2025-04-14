@@ -1,17 +1,16 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  output: 'standalone',
   images: {
-    // domains: ['growsome.s3.amazonaws.com'], // deprecated
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
         hostname: 'growsome.s3.amazonaws.com',
         port: '',
-        pathname: '/**', // 기존 domains 설정과 동일하게 모든 경로 허용
+        pathname: '/**',
       },
-      // 필요하다면 다른 패턴 추가
     ],
   },
   pageExtensions: ['tsx', 'ts'],
@@ -23,6 +22,27 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, POST, PUT, DELETE, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'X-Requested-With, Content-Type, Authorization',
+          },
+        ],
+      },
+    ];
+  },
 };
 
-export default nextConfig;
+export default nextConfig; 
