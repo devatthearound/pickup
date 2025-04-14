@@ -43,9 +43,16 @@ export default function LoginPage() {
       setAccessToken(accessToken);
       // 리프레시 토큰 저장
       setCookie("refreshToken", refreshToken, {
-        path: '/',
         expires: new Date(new Date().setDate(new Date().getDate() + 14)),
       });
+      
+      // React Native 앱에서 토큰 저장
+      if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'TOKEN_UPDATE',
+          token: refreshToken
+        }));
+      }
 
       // 로그인 성공 시 스토어 목록 페이지로 이동
       router.push('/bizes');

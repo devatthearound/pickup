@@ -52,16 +52,29 @@ export const useAxios = () => {
           
           // refreshToken은 쿠키에 저장
           setCookie('refreshToken', newRefreshToken, {
-            path: '/',
             expires: new Date(new Date().setDate(new Date().getDate() + 14)),
           });
+
+          // React Native 앱에서 토큰 저장
+          if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'TOKEN_UPDATE',
+              token: newRefreshToken
+            }));
+          }
 
           // 새로운 accessToken으로 요청 재시도
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           deleteCookie('refreshToken');
-          window.location.href = '/login';
+          // React Native 앱에서 토큰 저장
+          if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+            window.ReactNativeWebView.postMessage(JSON.stringify({
+              type: 'LOGOUT'
+            }));
+          }
+          
           return Promise.reject(refreshError);
         }
       }
