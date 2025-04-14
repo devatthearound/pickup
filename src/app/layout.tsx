@@ -1,11 +1,8 @@
-'use client';
-
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { useEffect } from "react";
-import { setCookie } from "@/lib/useCookie";
+import ClientLayout from "./ClientLayout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -19,35 +16,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  useEffect(() => {
-    // 전역 이벤트 리스너 설정
-    const messageListener = (event: MessageEvent) => {
-      const message = JSON.parse(event.data);
-      if (message.type === 'AUTO_LOGIN') {
-        // 토큰을 사용하여 자동 로그인 시도
-        const token = message.token;
-        // 로그인 API 호출
-          // refreshToken은 쿠키에 저장
-          console.log('token', token);
-        setCookie('refreshToken', token, {
-          expires: new Date(new Date().setDate(new Date().getDate() + 14)),
-        });
-      }
-    };
 
-    window.addEventListener('message', messageListener);
-
-    // 컴포넌트가 언마운트될 때 이벤트 리스너 제거
-    return () => {
-      window.removeEventListener('message', messageListener);
-    };
-  }, []);
 
   return (
     <html lang="ko">
       <body className={inter.className}>
         <AuthProvider>
-          {children}
+          <ClientLayout>
+            {children}
+          </ClientLayout>
         </AuthProvider>
         {/* <header className="bg-white shadow-sm">
 
