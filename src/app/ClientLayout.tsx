@@ -10,13 +10,16 @@ export default function ClientLayout({
   useEffect(() => {
     // 전역 이벤트 리스너 설정
     const messageListener = (event: MessageEvent) => {
+      console.log('messageListener', event);
       // React Native WebView에서 온 메시지인지 확인
       if (typeof window === 'undefined' || !window.ReactNativeWebView) {
         return;
       }
+      console.log('window.ReactNativeWebView', window.ReactNativeWebView);
 
       try {
         const message = JSON.parse(event.data);
+        console.log('message', message);
         if (message.type === 'AUTO_LOGIN') {
           // 토큰을 사용하여 자동 로그인 시도
           const token = message.token;
