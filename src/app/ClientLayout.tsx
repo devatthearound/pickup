@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { setCookie } from "@/lib/useCookie";
 
 export default function ClientLayout({
@@ -7,7 +7,9 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
+    console.log('ClientLayout');
     // 전역 이벤트 리스너 설정
     const messageListener = (event: MessageEvent) => {
       console.log('messageListener', event);
@@ -21,6 +23,7 @@ export default function ClientLayout({
         const message = JSON.parse(event.data);
         console.log('message', message);
         if (message.type === 'AUTO_LOGIN') {
+            setIsLoggedIn(true);
           // 토큰을 사용하여 자동 로그인 시도
           const token = message.token;
           // refreshToken은 쿠키에 저장
@@ -43,5 +46,8 @@ export default function ClientLayout({
     };
   }, []);
 
+  if (!isLoggedIn) {
+    return <>{children}</>;
+  }
   return <>{children}</>;
 }
