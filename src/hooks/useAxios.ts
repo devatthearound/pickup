@@ -36,10 +36,33 @@ export const useAxios = () => {
         originalRequest._retry = true;
 
         try {
-          const refreshToken = getCookie('refreshToken');
+          let refreshToken = getCookie('refreshToken');
           
           if (!refreshToken) {
-            throw new Error('Refresh token not found');
+            // React Native 환경에서 refreshToken 요청
+            if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+              window.ReactNativeWebView.postMessage(JSON.stringify({
+                type: 'REQUEST_TOKEN'
+              }));
+
+              // 메시지 수신 대기
+              const messageListener = (event: MessageEvent) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'TOKEN_RESPONSE') {
+                  refreshToken = message.token;
+                  window.removeEventListener('message', messageListener);
+                }
+              };
+
+              window.addEventListener('message', messageListener);
+
+              // refreshToken이 여전히 없으면 에러 처리
+              if (!refreshToken) {
+                throw new Error('Refresh token not found');
+              }
+            } else {
+              throw new Error('Refresh token not found');
+            }
           }
 
           const response = await axios.post(
@@ -68,7 +91,7 @@ export const useAxios = () => {
           return axiosInstance(originalRequest);
         } catch (refreshError) {
           deleteCookie('refreshToken');
-          // React Native 앱에서 토큰 저장
+          // React Native 앱에서 로그아웃 메시지 전송
           if (typeof window !== 'undefined' && window.ReactNativeWebView) {
             window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'LOGOUT'
