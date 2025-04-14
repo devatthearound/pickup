@@ -47,7 +47,7 @@ export default function ClientLayout({
   }, []);
 
   if (!isLoggedIn) {
-    return <>{children}</>;
+    return <></>;
   }
   return <>{children}</>;
 }
