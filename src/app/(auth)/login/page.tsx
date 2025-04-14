@@ -48,6 +48,7 @@ export default function LoginPage() {
       
       // React Native 앱에서 토큰 저장
       if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+        console.log('refreshToken', refreshToken);
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: 'TOKEN_UPDATE',
           token: refreshToken

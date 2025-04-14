@@ -41,6 +41,7 @@ export const useAxios = () => {
           if (!refreshToken) {
             // React Native 환경에서 refreshToken 요청
             if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+              console.log('window.ReactNativeWebView');
               window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'REQUEST_TOKEN'
               }));
@@ -80,6 +81,7 @@ export const useAxios = () => {
 
           // React Native 앱에서 토큰 저장
           if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+            console.log('window.ReactNativeWebView');
             window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'TOKEN_UPDATE',
               token: newRefreshToken
@@ -93,6 +95,7 @@ export const useAxios = () => {
           deleteCookie('refreshToken');
           // React Native 앱에서 로그아웃 메시지 전송
           if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+            console.log('window.ReactNativeWebView');
             window.ReactNativeWebView.postMessage(JSON.stringify({
               type: 'LOGOUT'
             }));
