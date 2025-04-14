@@ -1,12 +1,12 @@
 import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { getCookie, setCookie, deleteCookie } from '@/lib/useCookie';
-
+import { useRouter } from 'next/navigation';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr';
 
 export const useAxios = () => {
   const { accessToken } = useAuth();
-
+  const router = useRouter();
   const axiosInstance = axios.create({
     baseURL: API_URL,
   });
@@ -74,6 +74,9 @@ export const useAxios = () => {
               type: 'LOGOUT'
             }));
           }
+
+          // 로그아웃 후 페이지 이동
+          router.push('/login');
           
           return Promise.reject(refreshError);
         }
