@@ -28,6 +28,7 @@ export default function RootLayout({
         const token = message.token;
         // 로그인 API 호출
           // refreshToken은 쿠키에 저장
+          console.log('token', token);
         setCookie('refreshToken', token, {
           expires: new Date(new Date().setDate(new Date().getDate() + 14)),
         });
