@@ -7,42 +7,49 @@ export default function ClientLayout({
 }: {
   children: React.ReactNode;
 }) {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    console.log('ClientLayout');
-    // 전역 이벤트 리스너 설정
-    const messageListener = (event: MessageEvent) => {
-      console.log('messageListener', event);
-      // React Native WebView에서 온 메시지인지 확인
-      if (typeof window === 'undefined' || !window.ReactNativeWebView) {
-        return;
-      }
-      console.log('window.ReactNativeWebView', window.ReactNativeWebView);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  useEffect(() => {
+    console.log('ClientLayout mounted');
+
+    // React Native WebView에서 메시지를 수신하는 함수
+    const handleMessage = (event: MessageEvent) => {
+      console.log('Received message:', event.data);
+      
       try {
         const message = JSON.parse(event.data);
-        console.log('message', message);
+        console.log('Parsed message:', message);
+        
         if (message.type === 'AUTO_LOGIN') {
-            setIsLoggedIn(true);
-          // 토큰을 사용하여 자동 로그인 시도
+          setIsLoggedIn(true);
           const token = message.token;
-          // refreshToken은 쿠키에 저장
-          console.log('token', token);
+          console.log('Setting token:', token);
           setCookie('refreshToken', token, {
             expires: new Date(new Date().setDate(new Date().getDate() + 14)),
           });
         }
       } catch (error) {
-        // JSON 파싱 오류는 무시
-        console.error('Invalid message format:', error);
+        console.error('Error parsing message:', error);
       }
     };
 
-    window.addEventListener('message', messageListener);
+    // 이벤트 리스너 추가
+    window.addEventListener('message', handleMessage);
+    console.log('Message listener added');
+
+    // React Native WebView가 있는지 확인
+    if (typeof window !== 'undefined' && window.ReactNativeWebView) {
+      console.log('ReactNativeWebView is available');
+      // React Native WebView에 메시지 수신 준비 완료를 알림
+      window.ReactNativeWebView.postMessage(JSON.stringify({
+        type: 'WEBVIEW_READY'
+      }));
+    }
 
     // 컴포넌트가 언마운트될 때 이벤트 리스너 제거
     return () => {
-      window.removeEventListener('message', messageListener);
+      window.removeEventListener('message', handleMessage);
+      console.log('Message listener removed');
     };
   }, []);
 
