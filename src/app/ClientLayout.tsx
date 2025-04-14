@@ -1,65 +1,117 @@
 'use client';
-import { useEffect, useState } from "react";
-import { setCookie } from "@/lib/useCookie";
 
-export default function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+import { useEffect, useState } from 'react';
 
+export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const [connectionStatus, setConnectionStatus] = useState('확인 중...');
+  
   useEffect(() => {
-    console.log('ClientLayout mounted');
-
-    // React Native WebView에서 메시지를 수신하는 함수
-    const handleMessage = (event: MessageEvent) => {
-      // React Native WebView에서 온 메시지인지 확인
-      if (!window.ReactNativeWebView) {
-        return;
+    // WebView 브릿지 연결 확인
+    const checkConnection = () => {
+      if (window.ReactNativeWebView) {
+        setConnectionStatus('WebView 브릿지 연결됨');
+        console.log('ReactNativeWebView 브릿지 발견');
+        
+        // 연결 상태 보고
+        window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'BRIDGE_CONNECTED',
+          data: { time: new Date().toISOString() }
+        }));
+      } else {
+        setConnectionStatus('WebView 브릿지 없음 (일반 브라우저)');
+        console.log('ReactNativeWebView 브릿지 없음');
       }
+    };
 
-      console.log('Received message:', event.data);
+    // 메시지 이벤트 핸들러
+    const handleMessage = (event: MessageEvent) => {
+      console.log('메시지 이벤트 수신:', event);
       
       try {
-        const message = JSON.parse(event.data);
-        console.log('Parsed message:', message);
+        let messageData;
+        if (typeof event.data === 'string') {
+          messageData = JSON.parse(event.data);
+        } else {
+          messageData = event.data;
+        }
         
-        if (message.type === 'AUTO_LOGIN') {
-          setIsLoggedIn(true);
-          const token = message.token;
-          console.log('Setting token:', token);
-          setCookie('refreshToken', token, {
-            expires: new Date(new Date().setDate(new Date().getDate() + 14)),
-          });
+        console.log('파싱된 메시지:', messageData);
+
+        // AUTO_LOGIN 메시지 처리
+        if (messageData.type === 'AUTO_LOGIN' && messageData.token) {
+          console.log('AUTO_LOGIN 토큰 수신:', messageData.token);
+          // 토큰 저장 로직 추가
+          document.cookie = `refreshToken=${messageData.token}; path=/; max-age=1209600`; // 14일
+        }
+
+        // Expo에 응답 전송
+        if (window.ReactNativeWebView) {
+          window.ReactNativeWebView.postMessage(JSON.stringify({
+            type: 'MESSAGE_RECEIVED',
+            data: { 
+              received: true, 
+              messageType: messageData.type,
+              time: new Date().toISOString()
+            }
+          }));
         }
       } catch (error) {
-        console.error('Error parsing message:', error);
+        console.error('메시지 처리 오류:', error);
       }
     };
 
-    // 이벤트 리스너 추가
-    window.addEventListener('message', handleMessage);
-    console.log('Message listener added');
+    // 디버깅을 위한 글로벌 객체
+    (window as any).expoDebug = {
+      messages: [],
+      logMessage: function(msg: string) {
+        this.messages.push(msg);
+        console.log('expoDebug:', msg);
+      }
+    };
 
-    // React Native WebView가 있는지 확인
-    if (typeof window !== 'undefined' && window.ReactNativeWebView) {
-      console.log('ReactNativeWebView is available');
-      // React Native WebView에 메시지 수신 준비 완료를 알림
+    // 이벤트 리스너 등록
+    console.log('이벤트 리스너 등록 중');
+    window.addEventListener('message', handleMessage);
+    
+    // 초기화 실행
+    checkConnection();
+    
+    // Next.js가 로드되었음을 Expo에 알림
+    if (window.ReactNativeWebView) {
       window.ReactNativeWebView.postMessage(JSON.stringify({
-        type: 'WEBVIEW_READY'
+        type: 'NEXT_JS_READY',
+        data: { 
+          ready: true, 
+          time: new Date().toISOString(),
+          connectionStatus
+        }
       }));
     }
-
-    // 컴포넌트가 언마운트될 때 이벤트 리스너 제거
+    
+    // 클린업 함수
     return () => {
       window.removeEventListener('message', handleMessage);
-      console.log('Message listener removed');
     };
   }, []);
-
-  if (!isLoggedIn) {
-    return <></>;
-  }
-  return <>{children}</>;
+  
+  return (
+    <>
+      {/* 디버깅 정보 표시 (개발 모드에서만) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div style={{
+          position: 'fixed',
+          bottom: 0,
+          right: 0,
+          padding: '10px',
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          fontSize: '12px',
+          zIndex: 9999
+        }}>
+          <div>연결 상태: {connectionStatus}</div>
+        </div>
+      )}
+      {children}
+    </>
+  );
 }
