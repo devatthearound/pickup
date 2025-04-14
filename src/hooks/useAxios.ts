@@ -97,6 +97,9 @@ export const useAxios = () => {
               type: 'LOGOUT'
             }));
           }
+
+          // 로그인 페이지로 리다이렉트
+          window.location.href = '/login';
           
           return Promise.reject(refreshError);
         }
