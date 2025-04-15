@@ -32,13 +32,15 @@ export default function RootLayout({
         {/* <main className="max-w-7xl mx-auto">
           {children}
         </main> */}
-        {/* <footer className="bg-gray-50 border-t">
+        <footer className="bg-gray-50 border-t">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
-              © 2024 Pickup. All rights reserved.
+              © 2025 디어라운드 주식회사. All rights reserved.
+              사업자등록번호 573-86-01025 | 대표 조현주
+              통신판매업신고번호 제2025-서울영등포-0150호
             </p>
           </div>
-        </footer> */}
+        </footer>
       </body>
     </html>
   );
