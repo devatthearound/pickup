@@ -2,8 +2,24 @@
 
 import { setCookie } from '@/lib/useCookie';
 import { useEffect, useState } from 'react';
+import { useAxios } from '@/hooks/useAxios';
+// FCM 토큰 등록을 위한 타입 정의
+type DeviceType = 'IOS' | 'ANDROID' | 'WEB';
+
+interface FCMTokenData {
+  fcmToken: string;
+  platform: string;
+  platformVersion: string | number;
+  deviceId: string;
+  deviceName: string;
+  deviceModel: string;
+  systemVersion: string;
+  appVersion: string;
+  buildNumber: string;
+}
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
+  const axiosInstance = useAxios();
   // const [connectionStatus, setConnectionStatus] = useState('확인 중...');
   
   useEffect(() => {
@@ -48,8 +64,32 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
             expires: new Date(new Date().setDate(new Date().getDate() + 14)),
           });
         }
+
+        // FCM 토큰 업데이트 처리
+        if (messageData.type === 'FCM_TOKEN_UPDATE' && messageData.data) {
+          console.log('FCM 토큰 업데이트 수신:', messageData.data);
+          handleFCMTokenUpdate(messageData.data);
+        }
       } catch (error) {
         console.error('메시지 처리 오류:', error);
+      }
+    };
+
+    // FCM 토큰 업데이트 처리 함수
+    const handleFCMTokenUpdate = async (data: FCMTokenData) => {
+      try {
+        const deviceType: DeviceType = data.platform === 'ios' ? 'IOS' : 
+                                     data.platform === 'android' ? 'ANDROID' : 'WEB';
+
+        const response = await axiosInstance.post('/notification/register-token', {
+          fcmToken: data.fcmToken,
+          deviceType: deviceType,
+          deviceId: data.deviceId
+        });
+
+        console.log('FCM 토큰 등록 성공:', response.data);
+      } catch (error) {
+        console.error('FCM 토큰 등록 실패:', error);
       }
     };
 
