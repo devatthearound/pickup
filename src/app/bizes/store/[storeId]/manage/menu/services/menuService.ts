@@ -10,32 +10,41 @@ export interface MenuCategory {
   storeId: number;
 }
 
-export interface MenuItem {
+export type MenuItem = {
   id: number;
   storeId: number;
-  categoryId: number;
-  category?: {
-    id: number;
-    name: string;
-    description: string | null;
-    displayOrder: number;
-    isActive: boolean;
-  };
+  categoryId?: number;
   name: string;
-  description: string | null;
-  price: string;
-  discountedPrice: string | null;
-  imageUrl: string | null;
-  preparationTime: number | null;
+  description?: string;
+  price: number;
+  discountedPrice?: number;
+  preparationTime?: number;
   isAvailable: boolean;
   isPopular: boolean;
   isNew: boolean;
   isRecommended: boolean;
-  stockQuantity: number | null;
+  stockQuantity?: number;
   displayOrder: number;
-  createdAt: string;
-  updatedAt: string;
-}
+  imageUrl?: string;
+  updatedAt?: string;
+  createdAt?: string;
+  category?: {
+    id: number;
+    name: string;
+  };
+  categories?: {
+    id: number;
+    name: string;
+  }[];
+  menuItemCategories?: {
+    id: number;
+    displayOrder: number;
+    category: {
+      id: number;
+      name: string;
+    };
+  }[];
+};
 
 export interface OptionGroup {
   id: number;

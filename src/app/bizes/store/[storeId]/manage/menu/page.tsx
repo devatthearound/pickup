@@ -73,6 +73,10 @@ export default function MenuManagePage() {
       const items = response.data.data.map((item: any) => ({
         ...item,
         isAvailable: item.isAvailable === true,
+        // 메인 카테고리는 첫 번째 카테고리로 설정
+        category: item.menuItemCategories?.[0]?.category || null,
+        // 모든 카테고리 정보를 저장
+        categories: item.menuItemCategories?.map((mic: any) => mic.category) || []
       }));
       setMenuItems(items);
     } catch (error) {
@@ -305,7 +309,13 @@ export default function MenuManagePage() {
                               )}
                             </div>
                             <div className="text-gray-600">
-                              <span>카테고리: {item.category?.name || '-'}</span>
+                              <div className="flex flex-wrap gap-1">
+                                {item.categories?.map((cat: any) => (
+                                  <span key={cat.id} className="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded">
+                                    {cat.name}
+                                  </span>
+                                ))}
+                              </div>
                             </div>
                             <div className="text-gray-600">
                               <span>준비시간: {item.preparationTime ? `${item.preparationTime}분` : '-'}</span>
@@ -357,7 +367,7 @@ export default function MenuManagePage() {
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs lg:text-sm text-gray-500">
-                            {new Date(item.updatedAt).toLocaleDateString()}
+                            {item.updatedAt ? new Date(item.updatedAt).toLocaleDateString() : '-'}
                           </span>
                           <label className="relative inline-flex items-center cursor-pointer">
                             <input 

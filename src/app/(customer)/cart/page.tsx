@@ -33,21 +33,14 @@ export default function CartPage() {
   useEffect(() => {
     const loadCartData = () => {
       if (typeof window !== 'undefined') {
-        // 현재 주문 중인 가게 ID 가져오기
         const currentStoreId = localStorage.getItem('currentStoreId');
-        console.log('currentStoreId:', currentStoreId); // 디버깅용 로그
-        
         if (currentStoreId) {
           setStoreId(currentStoreId);
-          // 해당 가게의 장바구니 아이템 가져오기
           const savedCart = localStorage.getItem(`cart_${currentStoreId}`);
-          console.log('savedCart:', savedCart); // 디버깅용 로그
-          
           if (savedCart) {
             const items = JSON.parse(savedCart);
             setCartItems(items);
             
-            // 총 금액 계산
             const total = items.reduce((sum: number, item: CartItem) => {
               const price = item.discountedPrice !== item.price 
                 ? parseInt(item.discountedPrice) 
@@ -57,17 +50,15 @@ export default function CartPage() {
             setTotalAmount(total);
           }
         } else {
-          // 가게 ID가 없는 경우 이전 페이지로 리다이렉트
-          console.log('No currentStoreId found in localStorage'); // 디버깅용 로그
           setTimeout(() => {
             router.back();
-          }, 100); // 100ms 후에 리다이렉트
+          }, 100);
         }
       }
     };
 
     loadCartData();
-  }, []); // 의존성 배열을 비워서 컴포넌트 마운트 시에만 실행
+  }, []);
 
   const updateQuantity = (itemId: number, quantity: number) => {
     if (quantity < 1) {
@@ -83,7 +74,6 @@ export default function CartPage() {
         localStorage.setItem(`cart_${storeId}`, JSON.stringify(updatedItems));
       }
       
-      // 총 금액 업데이트
       const total = updatedItems.reduce((sum: number, item: CartItem) => {
         const price = item.discountedPrice !== item.price 
           ? parseInt(item.discountedPrice) 
@@ -103,7 +93,6 @@ export default function CartPage() {
         localStorage.setItem(`cart_${storeId}`, JSON.stringify(updatedItems));
       }
       
-      // 총 금액 업데이트
       const total = updatedItems.reduce((sum: number, item: CartItem) => {
         const price = item.discountedPrice !== item.price 
           ? parseInt(item.discountedPrice) 
@@ -117,8 +106,7 @@ export default function CartPage() {
   };
 
   const handleCheckout = () => {
-    // 주문자 정보 입력 페이지로 이동
-    router.push('/u/personal-info');
+    router.push('/personal-info');
   };
 
   if (!storeId) {
@@ -143,76 +131,94 @@ export default function CartPage() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6 pb-32">
-      <h1 className="text-2xl font-bold mb-6">픽업 예약 목록</h1>
-      
-      <div className="space-y-4">
+    <div className="max-w-md mx-auto bg-white min-h-screen">
+      {/* 상단 헤더 */}
+      <div className="sticky top-0 z-20 bg-white">
+        <div className="flex items-center justify-between p-2">
+          <div className="flex items-center">
+            <button onClick={() => router.back()} className="p-1">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <h1 className="text-lg font-bold">장바구니</h1>
+          </div>
+        </div>
+      </div>
+
+      {/* 장바구니 아이템 목록 */}
+      <div className="pb-24">
         {cartItems.map(item => (
-          <div key={item.id} className="flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm">
-            <div className="relative w-20 h-20">
+          <div key={item.id} className="px-4 py-4 flex gap-4 border-b border-gray-100">
+            <div className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0">
               <Image
                 src={item.imageUrl || '/images/default-menu.png'}
                 alt={item.name}
                 fill
-                className="object-cover rounded-lg"
+                className="object-cover"
               />
             </div>
-            <div className="flex-1">
-              <h3 className="font-medium">{item.name}</h3>
-              <div className="flex items-center gap-2 mt-1">
-                {item.discountedPrice !== item.price ? (
-                  <>
-                    <p className="text-[#FF7355] font-medium">
-                      {parseInt(item.discountedPrice).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-                    </p>
-                    <p className="text-sm text-gray-400 line-through">
-                      {parseInt(item.price).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-                    </p>
-                  </>
-                ) : (
-                  <p className="text-[#FF7355] font-medium">
-                    {parseInt(item.price).toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between mb-1">
+                <h3 className="font-medium text-base truncate">{item.name}</h3>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <p className="font-medium">
+                  {item.discountedPrice !== item.price
+                    ? parseInt(item.discountedPrice).toLocaleString('ko-KR')
+                    : parseInt(item.price).toLocaleString('ko-KR')}원
+                </p>
+                {item.discountedPrice !== item.price && (
+                  <p className="text-sm text-gray-400 line-through">
+                    {parseInt(item.price).toLocaleString('ko-KR')}원
                   </p>
                 )}
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full"
-              >
-                -
-              </button>
-              <span>{item.quantity}</span>
-              <button
-                onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full"
-              >
-                +
-              </button>
-              <button
-                onClick={() => removeFromCart(item.id)}
-                className="text-gray-400 hover:text-red-500"
-              >
-                ×
-              </button>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                    </svg>
+                  </button>
+                  <span className="text-lg font-medium w-8 text-center">{item.quantity}</span>
+                  <button
+                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                  </button>
+                </div>
+                <button
+                  onClick={() => removeFromCart(item.id)}
+                  className="text-gray-400 hover:text-red-500"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="fixed bottom-20 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 pb-4">
-        <div className="bg-white p-4 rounded-lg shadow-lg mb-4">
-          <div className="flex justify-between items-center">
-            <span className="font-medium">총 금액</span>
-            <span className="text-[#FF7355] font-bold">
-              {totalAmount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-            </span>
-          </div>
+      {/* 하단 주문 버튼 */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
+        <div className="flex items-center justify-between max-w-md mx-auto mb-4">
+          <span className="text-gray-600">총 금액</span>
+          <span className="text-lg font-bold">
+            {totalAmount.toLocaleString('ko-KR')}원
+          </span>
         </div>
         <button
           onClick={handleCheckout}
-          className="w-full py-4 bg-[#FF7355] text-white rounded-lg font-medium shadow-lg text-lg hover:bg-[#FF6344] transition-colors"
+          className="w-full py-3.5 bg-[#FF7355] text-white font-medium rounded-lg hover:bg-[#FF6344] transition-colors"
         >
           주문하기
         </button>

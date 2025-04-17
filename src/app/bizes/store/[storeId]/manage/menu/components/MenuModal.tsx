@@ -23,7 +23,6 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
     description: '',
     price: '',
     discountedPrice: '',
-    categoryId: '',
     preparationTime: '',
     isPopular: false,
     isNew: false,
@@ -33,6 +32,7 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
 
   const tabs = ['기본 정보', '옵션 관리'];
 
@@ -43,7 +43,6 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
         description: initialData.description || '',
         price: String(initialData.price),
         discountedPrice: initialData.discountedPrice ? String(initialData.discountedPrice) : '',
-        categoryId: String(initialData.categoryId),
         preparationTime: initialData.preparationTime ? String(initialData.preparationTime) : '',
         isPopular: initialData.isPopular,
         isNew: initialData.isNew,
@@ -52,6 +51,14 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
       });
       if (initialData.imageUrl) {
         setImagePreview(initialData.imageUrl);
+      }
+      if (initialData.menuItemCategories && Array.isArray(initialData.menuItemCategories) && initialData.menuItemCategories.length > 0) {
+        const categoryIds = initialData.menuItemCategories
+          .filter(mic => mic && mic.category && mic.category.id)
+          .map(mic => mic.category.id);
+        setSelectedCategories(categoryIds);
+      } else {
+        setSelectedCategories([]);
       }
     } else {
       resetForm();
@@ -68,7 +75,6 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
       description: '',
       price: '',
       discountedPrice: '',
-      categoryId: '',
       preparationTime: '',
       isPopular: false,
       isNew: false,
@@ -77,6 +83,7 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
     });
     setImageFile(null);
     setImagePreview(null);
+    setSelectedCategories([]);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,14 +104,26 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
 
     try {
       const formDataToSubmit = new FormData();
+
+      // 기본 정보 추가
       Object.entries(formData).forEach(([key, value]) => {
         if (value !== '') {
           formDataToSubmit.append(key, value.toString());
         }
       });
-      
+
+      // 이미지 추가
       if (imageFile) {
         formDataToSubmit.append('image', imageFile);
+      }
+
+      // 카테고리 ID 추가 (숫자 배열을 JSON 문자열로 변환)
+      const categoryIds = selectedCategories
+        .filter(id => typeof id === 'number')
+        .map(id => Number(id));
+      
+      if (categoryIds.length > 0) {
+        formDataToSubmit.append('categoryIds', JSON.stringify(categoryIds));
       }
 
       await onSubmit(formDataToSubmit);
@@ -233,19 +252,32 @@ export default function MenuModal({ isOpen, onClose, onSubmit, categories, initi
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       카테고리 * (총 {categories?.length || 0}개)
                     </label>
-                    <select
-                      value={formData.categoryId}
-                      onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                      className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#FF7355] focus:border-transparent"
-                      required
-                    >
-                      <option value="">카테고리 선택</option>
-                      {categories?.map((category) => (
-                        <option key={category.id} value={category.id}>
+                    <div className="flex flex-wrap gap-2">
+                      {categories.map((category) => (
+                        <label
+                          key={category.id}
+                          className={`px-3 py-1 rounded-full text-sm cursor-pointer ${
+                            selectedCategories.includes(category.id)
+                              ? 'bg-[#FF7355] text-white'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="hidden"
+                            checked={selectedCategories.includes(category.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedCategories([...selectedCategories, category.id]);
+                              } else {
+                                setSelectedCategories(selectedCategories.filter((id) => id !== category.id));
+                              }
+                            }}
+                          />
                           {category.name}
-                        </option>
+                        </label>
                       ))}
-                    </select>
+                    </div>
                   </div>
 
                   <div>
