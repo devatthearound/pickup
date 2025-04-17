@@ -2,10 +2,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { getCookie, setCookie, deleteCookie } from '@/lib/useCookie';
 import { useRouter } from 'next/navigation';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr';
-
+// const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr';
+const API_URL = 'http://localhost:3001';
 export const useAxios = () => {
-  const { accessToken } = useAuth();
+  const { accessToken, setAccessToken } = useAuth();
   const router = useRouter();
   const axiosInstance = axios.create({
     baseURL: API_URL,
@@ -37,9 +37,11 @@ export const useAxios = () => {
 
         try {
           const refreshToken = getCookie('refreshToken');
+          console.log('refreshToken', refreshToken);
           
           if (!refreshToken) {
-            throw new Error('Refresh token not found');
+            router.push('/bizes/login');
+            return Promise.reject(error);
           }
 
           const response = await axios.post(
@@ -64,6 +66,7 @@ export const useAxios = () => {
           }
 
           // 새로운 accessToken으로 요청 재시도
+          setAccessToken(newAccessToken);
           originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return axiosInstance(originalRequest);
         } catch (refreshError) {
@@ -76,7 +79,7 @@ export const useAxios = () => {
           }
 
           // 로그아웃 후 페이지 이동
-          router.push('/login');
+          router.push('/bizes/login');
           
           return Promise.reject(refreshError);
         }

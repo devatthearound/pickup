@@ -105,7 +105,7 @@ export default function StoreRegisterPage() {
           case 400:
             throw new Error('입력하신 정보를 다시 확인해주세요.');
           case 401:
-            router.push('/login');
+            router.push('/bizes/login');
             return;
           case 403:
             throw new Error('스토어 등록 권한이 없습니다.');

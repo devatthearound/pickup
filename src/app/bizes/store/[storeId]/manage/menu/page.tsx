@@ -185,24 +185,24 @@ export default function MenuManagePage() {
   }, [selectedCategory]);
 
   return (
-    <div className="p-6">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* 상단 헤더 */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 lg:mb-8">
         <div>
-          <h1 className="text-2xl font-bold">메뉴 관리</h1>
-          <p className="text-gray-600 mt-1">메뉴와 카테고리를 관리할 수 있습니다.</p>
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold">메뉴 관리</h1>
+          <p className="text-sm sm:text-base lg:text-lg text-gray-600 mt-1">메뉴와 카테고리를 관리할 수 있습니다.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
           <button
             onClick={() => setIsCategoryModalOpen(true)}
-            className="flex items-center px-4 py-2 text-gray-700 bg-white border rounded-lg hover:bg-gray-50"
+            className="flex items-center justify-center px-4 py-2 text-sm lg:text-base text-gray-700 bg-white border rounded-lg hover:bg-gray-50 transition-colors"
           >
             <HiPlus className="mr-2" />
             카테고리 추가
           </button>
           <button
             onClick={() => setIsMenuModalOpen(true)}
-            className="flex items-center px-4 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF8365]"
+            className="flex items-center justify-center px-4 py-2 text-sm lg:text-base bg-[#FF7355] text-white rounded-lg hover:bg-[#FF8365] transition-colors"
           >
             <HiPlus className="mr-2" />
             새 메뉴 등록
@@ -210,11 +210,11 @@ export default function MenuManagePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6 mt-6">
+      <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
         {/* 좌측 카테고리 패널 */}
-        <div className="col-span-3">
-          <div className="bg-white rounded-xl shadow-sm p-4">
-            <h2 className="font-semibold text-gray-900 mb-4">카테고리</h2>
+        <div className="w-full lg:w-1/4">
+          <div className="bg-white rounded-xl shadow-sm p-4 lg:p-6">
+            <h2 className="font-semibold text-gray-900 mb-4 lg:mb-6">카테고리</h2>
             <ul className="space-y-1">
               <li 
                 className={`px-4 py-2 rounded-lg cursor-pointer ${
@@ -265,17 +265,17 @@ export default function MenuManagePage() {
         </div>
 
         {/* 우측 메뉴 목록 */}
-        <div className="col-span-9">
+        <div className="w-full lg:w-3/4">
           {isLoading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF7355] mx-auto"></div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {menuItems.map((item) => (
-                <div key={item.id} className="bg-white rounded-xl shadow-sm p-4">
-                  <div className="flex gap-4">
-                    <div className="w-24 h-24 bg-gray-100 rounded-lg overflow-hidden">
+                <div key={item.id} className="bg-white rounded-xl shadow-sm p-4 lg:p-6 hover:shadow-md transition-shadow">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="w-full sm:w-24 lg:w-32 h-24 lg:h-32 bg-gray-100 rounded-lg overflow-hidden">
                       {item.imageUrl ? (
                         <img
                           src={item.imageUrl}
@@ -289,11 +289,11 @@ export default function MenuManagePage() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <div className="flex justify-between items-start">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-start gap-2">
                         <div>
-                          <h3 className="font-semibold">{item.name}</h3>
-                          <p className="text-sm text-gray-600 mt-1">{item.description || '-'}</p>
-                          <div className="mt-2 space-y-1 text-sm">
+                          <h3 className="font-semibold text-base lg:text-lg">{item.name}</h3>
+                          <p className="text-sm lg:text-base text-gray-600 mt-1">{item.description || '-'}</p>
+                          <div className="mt-2 space-y-1 text-sm lg:text-base">
                             <div>
                               <span className="text-[#FF7355] font-medium">
                                 {Math.floor(Number(item.price)).toLocaleString()}원
@@ -320,23 +320,23 @@ export default function MenuManagePage() {
                         </div>
                         <div className="flex flex-wrap gap-1">
                           {item.isPopular && (
-                            <span className="px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded">
+                            <span className="px-2 py-1 text-xs lg:text-sm bg-blue-100 text-blue-600 rounded">
                               인기
                             </span>
                           )}
                           {item.isNew && (
-                            <span className="px-2 py-1 text-xs bg-green-100 text-green-600 rounded">
+                            <span className="px-2 py-1 text-xs lg:text-sm bg-green-100 text-green-600 rounded">
                               신메뉴
                             </span>
                           )}
                           {item.isRecommended && (
-                            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-600 rounded">
+                            <span className="px-2 py-1 text-xs lg:text-sm bg-yellow-100 text-yellow-600 rounded">
                               추천
                             </span>
                           )}
                         </div>
                       </div>
-                      <div className="mt-4 flex items-center justify-between">
+                      <div className="mt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <div className="flex gap-2">
                           <button 
                             onClick={async () => {
@@ -344,19 +344,19 @@ export default function MenuManagePage() {
                               setEditingMenuItem(item);
                               setIsMenuModalOpen(true);
                             }}
-                            className="p-2 text-sm border rounded-lg hover:bg-gray-50"
+                            className="p-2 text-sm lg:text-base border rounded-lg hover:bg-gray-50 transition-colors"
                           >
-                            <HiPencil className="w-4 h-4" />
+                            <HiPencil className="w-4 h-4 lg:w-5 lg:h-5" />
                           </button>
                           <button 
                             onClick={() => openDeleteDialog('menu', item.id, item.name)}
-                            className="p-2 text-sm border rounded-lg hover:bg-gray-50 text-red-500"
+                            className="p-2 text-sm lg:text-base border rounded-lg hover:bg-gray-50 text-red-500 transition-colors"
                           >
-                            <HiTrash className="w-4 h-4" />
+                            <HiTrash className="w-4 h-4 lg:w-5 lg:h-5" />
                           </button>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs lg:text-sm text-gray-500">
                             {new Date(item.updatedAt).toLocaleDateString()}
                           </span>
                           <label className="relative inline-flex items-center cursor-pointer">

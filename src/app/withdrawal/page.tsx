@@ -30,7 +30,7 @@ export default function WithdrawalPage() {
       
       // 로그아웃 처리
       setAccessToken(null);
-      router.push('/login');
+      router.push('/bizes/login');
     } catch (err) {
       console.error('탈퇴 실패:', err);
       setError('탈퇴 처리 중 오류가 발생했습니다. 다시 시도해주세요.');

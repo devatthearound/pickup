@@ -1,11 +1,11 @@
 export enum OrderStatus {
   PENDING = 'pending',
-  ACCEPTED = 'accepted',
+  // ACCEPTED = 'accepted',
   PREPARING = 'preparing',
   READY = 'ready',
   COMPLETED = 'completed',
   REJECTED = 'rejected',
-  CANCELED = 'canceled'
+  // CANCELED = 'canceled'
 }
 
 export enum PaymentStatus {

@@ -1,60 +1,88 @@
+import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className="min-h-[calc(100vh-8rem)] flex flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold mb-12 text-center">
-        <span className="block text-gray-900">Welcome to</span>
-        <span className="block text-coral-500 mt-2">Pickup</span>
-      </h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full px-4">
-        {/* 고객용 카드 */}
-        <a href="/u/store/10" className="group">
-          <div className="bg-white rounded-2xl shadow-lg p-8 transition-all duration-200 hover:shadow-xl hover:scale-105">
-            <div className="aspect-square rounded-xl bg-coral-50 flex items-center justify-center mb-6">
-              <svg className="w-24 h-24 text-coral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">고객 모드</h2>
-            <p className="text-gray-600">
-              빠르고 편리한 픽업 주문으로 맛있는 음식을 기다림 없이 만나보세요.
-            </p>
-          </div>
-        </a>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative h-screen flex items-center justify-center bg-[#FF7355]">
 
-        {/* 사장님용 카드 */}
-        <a href="/bizes" className="group">
-          <div className="bg-white rounded-2xl shadow-lg p-8 transition-all duration-200 hover:shadow-xl hover:scale-105">
-            <div className="aspect-square rounded-xl bg-coral-50 flex items-center justify-center mb-6">
-              <svg className="w-24 h-24 text-coral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-3">사장님 모드</h2>
-            <p className="text-gray-600">
-              효율적인 주문 관리와 매장 운영을 도와드립니다.
-            </p>
+        <div className="relative z-10 text-center text-white px-4">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            동네 가게를 위한<br />
+            간편한 픽업 예약 시스템
+          </h1>
+          <p className="text-xl md:text-2xl mb-8">
+            픽업해 - 스토어 관리 서비스
+          </p>
+          <div className="flex flex-col md:flex-row gap-4 justify-center">
+            <Link 
+              href="/bizes"
+              className="bg-white text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition"
+            >
+              시작하기
+            </Link>
+            <Link 
+              href="/"
+              className="border-2 border-white px-8 py-4 rounded-full text-lg font-semibold hover:bg-white/10 transition"
+            >
+              더 알아보기
+            </Link>
           </div>
-        </a>
-      </div>
+        </div>
+      </section>
 
-      {/* 슈퍼관리자 접근 버튼 */}
-      {/* <div className="mt-8">
-        <a href="/admin/customer-service" className="group">
-          <div className="bg-white rounded-xl shadow p-4 transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-coral-50 flex items-center justify-center">
-              <svg className="w-6 h-6 text-coral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <div>
-              <span className="text-sm font-medium text-gray-900">슈퍼관리자 모드</span>
-              <span className="text-xs text-gray-500 ml-2">(본사 전용)</span>
-            </div>
+      {/* Features Section */}
+      <section className="py-20 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            픽업해 주요 기능
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: "재고 소진율 90% ↑",
+                description: "예약 시스템으로 당일 재고를 효율적으로 관리하세요.",
+                icon: "📱"
+              },
+              {
+                title: "전화 응대 시간 절약",
+                description: "전화 응대 없이 자동화된 예약 시스템을 이용하세요.",
+                icon: "📊"
+              },
+              {
+                title: "단골 고객 관리",
+                description: "정기 예약 고객을 위한 특별한 관리 기능을 제공합니다.",
+                icon: "🍽️"
+              }
+            ].map((feature, index) => (
+              <div key={index} className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
+                <div className="text-4xl mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </div>
+            ))}
           </div>
-        </a>
-      </div> */}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 px-4 bg-black text-white">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            지금 바로 시작하세요
+          </h2>
+          <p className="text-xl mb-8">
+            픽업해와 함께 스토어 관리를 더욱 효율적으로 만들어보세요
+          </p>
+          <Link
+            href="/bizes"
+            className="inline-block bg-white text-black px-8 py-4 rounded-full text-lg font-semibold hover:bg-gray-100 transition"
+          >
+            무료로 시작하기
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

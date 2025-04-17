@@ -25,6 +25,11 @@ export default function OrdersList() {
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | ''>(OrderStatus.PENDING);
+  const [changingStatus, setChangingStatus] = useState<number | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
   const axiosInstance = useAxios();
 
   // 오늘 날짜 설정
@@ -43,6 +48,7 @@ export default function OrdersList() {
 
   const fetchOrders = async () => {
     try {
+      setIsRefreshing(true);
       const queryString = new URLSearchParams();
       Object.entries(queryParams).forEach(([key, value]) => {
         if (value !== undefined && value !== '') {
@@ -50,11 +56,7 @@ export default function OrdersList() {
         }
       });
 
-      const response = await axiosInstance.get(`/orders?${queryString}`, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axiosInstance.get(`/orders?${queryString}`);
 
       if (response.status !== 200) {
         throw new Error('주문 목록을 불러오는데 실패했습니다.');
@@ -67,6 +69,7 @@ export default function OrdersList() {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -80,12 +83,17 @@ export default function OrdersList() {
   }, [storeId, queryParams]);
 
   const handleStatusChange = async (orderId: number, newStatus: OrderStatus) => {
+    if (changingStatus !== null || isRefreshing) return;
+    
     try {
+      setChangingStatus(orderId);
+      
       // 거부 상태일 경우 거부 사유 입력 모달 표시
       if (newStatus === OrderStatus.REJECTED) {
         const reason = window.prompt('거부 사유를 입력해주세요:');
         if (!reason) {
-          return; // 거부 사유가 없으면 취소
+          setChangingStatus(null);
+          return;
         }
         
         const response = await axiosInstance.patch(`/orders/${orderId}/status`, { 
@@ -98,8 +106,7 @@ export default function OrdersList() {
           throw new Error(errorData.message || '주문 상태 변경에 실패했습니다.');
         }
 
-        // 상태 변경 후 주문 목록 갱신
-        fetchOrders();
+        await fetchOrders();
         return;
       }
 
@@ -113,11 +120,12 @@ export default function OrdersList() {
         throw new Error(errorData.message || '주문 상태 변경에 실패했습니다.');
       }
 
-      // 상태 변경 후 주문 목록 갱신
-      fetchOrders();
+      await fetchOrders();
     } catch (err) {
       console.error('주문 상태 변경 실패:', err);
       alert(err instanceof Error ? err.message : '주문 상태 변경에 실패했습니다.');
+    } finally {
+      setChangingStatus(null);
     }
   };
 
@@ -130,41 +138,81 @@ export default function OrdersList() {
     }));
   };
 
-  const getStatusColor = (status: OrderStatus) => {
-    switch (status) {
-      case OrderStatus.PENDING:
-        return 'bg-yellow-100 text-yellow-800';
-      case OrderStatus.ACCEPTED:
-        return 'bg-blue-100 text-blue-800';
-      case OrderStatus.PREPARING:
-        return 'bg-purple-100 text-purple-800';
-      case OrderStatus.READY:
-        return 'bg-green-100 text-green-800';
-      case OrderStatus.REJECTED:
-        return 'bg-red-100 text-red-800';
-      case OrderStatus.CANCELED:
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-
   const getStatusText = (status: OrderStatus) => {
     switch (status) {
       case OrderStatus.PENDING:
-        return '주문 대기';
-      case OrderStatus.ACCEPTED:
-        return '주문 수락';
+        return '주문 접수';
+      // case OrderStatus.ACCEPTED:
+      //   return '주문 접수';
       case OrderStatus.PREPARING:
-        return '준비 중';
+        return '처리중';
       case OrderStatus.READY:
-        return '준비 완료';
-      case OrderStatus.REJECTED:
-        return '주문 거절';
-      case OrderStatus.CANCELED:
-        return '주문 취소';
+        return '픽업 대기';
+      case OrderStatus.COMPLETED:
+        return '픽업 완료';
+      // case OrderStatus.REJECTED:
+      // case OrderStatus.CANCELED:
+      //   return '주문조회';
       default:
         return '완료';
+    }
+  };
+
+  const getStatusColor = (status: OrderStatus) => {
+    switch (status) {
+      case OrderStatus.PENDING:
+      // case OrderStatus.ACCEPTED:
+        return 'bg-[#FFF5EE] text-[#FF6B00]';
+      case OrderStatus.PREPARING:
+        return 'bg-[#E6F7FF] text-[#1890FF]';
+      case OrderStatus.READY:
+      case OrderStatus.COMPLETED:
+        return 'bg-[#F6FFED] text-[#52C41A]';
+      case OrderStatus.REJECTED:
+      // case OrderStatus.CANCELED:
+        return 'bg-[#FFF1F0] text-[#FF4D4F]';
+      default:
+        return 'bg-[#F6FFED] text-[#52C41A]';
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setQueryParams(prev => ({
+      ...prev,
+      page
+    }));
+  };
+
+  const handleRejectClick = (orderId: number) => {
+    setSelectedOrderId(orderId);
+    setShowRejectModal(true);
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!selectedOrderId || !rejectReason.trim()) return;
+    
+    try {
+      setChangingStatus(selectedOrderId);
+      const response = await axiosInstance.patch(`/orders/${selectedOrderId}/status`, { 
+        status: OrderStatus.REJECTED,
+        rejectionReason: rejectReason.trim()
+      });
+
+      if (response.status !== 200) {
+        const errorData = await response.data;
+        throw new Error(errorData.message || '주문 상태 변경에 실패했습니다.');
+      }
+
+      await fetchOrders();
+      setShowRejectModal(false);
+      setRejectReason('');
+      setSelectedOrderId(null);
+    } catch (err) {
+      console.error('주문 거절 실패:', err);
+      alert(err instanceof Error ? err.message : '주문 거절에 실패했습니다.');
+    } finally {
+      setChangingStatus(null);
     }
   };
 
@@ -191,137 +239,249 @@ export default function OrdersList() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-[#F7F7F7] p-4">
+      <div className="max-w-6xl mx-auto">
+        {/* 로딩 인디케이터 */}
+        {(changingStatus !== null || isRefreshing) && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white px-8 py-6 rounded-xl shadow-xl flex flex-col items-center gap-4">
+              <div className="w-8 h-8 border-4 border-[#FF6B00] border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-base font-medium text-gray-800">처리하는 중</span>
+            </div>
+          </div>
+        )}
+
+        {/* 거절 사유 입력 모달 */}
+        {showRejectModal && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+            <div className="bg-white w-full max-w-md mx-4 rounded-2xl shadow-xl">
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">주문 거절 사유</h3>
+                
+                {/* 빠른 선택 버튼 */}
+                <div className="flex flex-col gap-2 mb-4">
+                  <button
+                    onClick={() => setRejectReason('반죽/재료 소진으로 인해 조기 마감되었습니다.')}
+                    className="w-full px-4 py-2 text-sm text-left text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100"
+                  >
+                    반죽/재료 소진으로 인해 조기 마감되었습니다.
+                  </button>
+                </div>
+
+                <textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="거절 사유를 입력해주세요"
+                  className="w-full h-32 p-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF6B00] resize-none"
+                />
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => {
+                      setShowRejectModal(false);
+                      setRejectReason('');
+                      setSelectedOrderId(null);
+                    }}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={handleRejectSubmit}
+                    disabled={!rejectReason.trim() || changingStatus !== null}
+                    className="flex-1 px-4 py-2 text-sm font-medium text-white bg-[#FF6B00] rounded-lg hover:bg-[#FF8A3D] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {changingStatus === selectedOrderId ? '처리 중...' : '거절하기'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 헤더 */}
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">주문 관리</h1>
+          <h1 className="text-2xl font-bold">{format(new Date(), 'M월 d일', { locale: ko })} 주문내역</h1>
           <Link
             href={`/bizes/store/${storeId}/manage/orders/history`}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+            className="px-4 py-2 text-sm bg-white text-[#FF6B00] rounded-full border border-[#FF6B00] hover:bg-[#FFF5EE] transition-colors"
           >
-            주문 내역 보기
+            주문 내역
           </Link>
         </div>
 
         {/* 상태 필터 */}
-        <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => handleStatusFilterChange('')}
-              className={`px-4 py-2 rounded-lg ${
-                selectedStatus === ''
-                  ? 'bg-[#FF7355] text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              전체
-            </button>
-            {Object.values(OrderStatus).map((status) => (
-              <button
-                key={status}
-                onClick={() => handleStatusFilterChange(status)}
-                className={`px-4 py-2 rounded-lg ${
-                  selectedStatus === status
-                    ? 'bg-[#FF7355] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                {getStatusText(status)}
-              </button>
-            ))}
-          </div>
+        <div className="grid grid-cols-4 gap-0 mb-6">
+          <button
+            onClick={() => handleStatusFilterChange(OrderStatus.PENDING)}
+            className={`p-4 text-center font-bold ${
+              selectedStatus === OrderStatus.PENDING
+                ? 'bg-[#FF6B00] text-white'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            }`}
+          >
+            <span className="block">주문</span>
+            <span className="block">접수</span>
+          </button>
+          <button
+            onClick={() => handleStatusFilterChange(OrderStatus.PREPARING)}
+            className={`p-4 text-center font-bold ${
+              selectedStatus === OrderStatus.PREPARING
+                ? 'bg-[#FF6B00] text-white'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            }`}
+          >
+            <span className="block">처리중</span>
+          </button>
+          <button
+            onClick={() => handleStatusFilterChange(OrderStatus.READY)}
+            className={`p-4 text-center font-bold ${
+              selectedStatus === OrderStatus.READY
+                ? 'bg-[#FF6B00] text-white'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            }`}
+          >
+            <span className="block">완료</span>
+          </button>
+          <button
+            onClick={() => handleStatusFilterChange(OrderStatus.COMPLETED)}
+            className={`p-4 text-center font-bold ${
+              selectedStatus === OrderStatus.COMPLETED
+                ? 'bg-[#FF6B00] text-white'
+                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+            }`}
+          >
+            <span className="block">주문</span>
+            <span className="block">조회</span>
+          </button>
         </div>
 
         {/* 주문 목록 */}
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {orders.length > 0 ? (
             orders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white rounded-xl shadow-sm p-4"
+                className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow duration-200"
               >
-                <div className="flex justify-between items-start mb-2">
-                  <div>
-                    <h3 className="text-lg font-bold">주문 #{order.orderNumber}</h3>
-                    <p className="text-sm text-gray-500">
-                      {format(new Date(order.createdAt), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}
-                    </p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <span className={`px-2 py-1 rounded-full text-sm ${getStatusColor(order.status)}`}>
+                {/* 주문 헤더 */}
+                <div className="p-4 border-b border-gray-100">
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-sm text-gray-500">주문번호 : {order.orderNumber}</span>
+                      <span className="text-sm text-gray-500">
+                        주문일시: {format(new Date(order.createdAt), 'MM/dd HH:mm', { locale: ko })}
+                      </span>
+                    </div>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
                       {getStatusText(order.status)}
                     </span>
                   </div>
                 </div>
-                <div className="space-y-1 text-sm">
-                  <p>고객: {order.customerName}</p>
-                  <p>전화: {order.customerPhone}</p>
-                  <p>픽업 예정: {format(new Date(order.pickupTime), 'yyyy년 MM월 dd일 HH:mm', { locale: ko })}</p>
-                  <div className="mt-2">
-                    <p className="font-medium">주문 내역:</p>
-                    <ul className="list-disc list-inside text-gray-600">
-                      {order.orderItems.map((item) => (
-                        <li key={item.id}>
-                          {item.menuItem.name} x {item.quantity}
-                          {item.specialInstructions && ` (${item.specialInstructions})`}
-                        </li>
-                      ))}
-                      
-                    </ul>
+
+                {/* 주문 메뉴 */}
+                <div className="p-4 border-b border-gray-100">
+                  <h4 className="text-base font-bold mb-3 text-gray-800">
+                    주문 내역
+                  </h4>
+                  <ul className="space-y-3">
+                    {order.orderItems.map((item) => (
+                      <li key={item.id} className="flex justify-between items-start">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-gray-900">
+                            {item.menuItem.name}
+                          </span>
+                          {item.specialInstructions && (
+                            <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
+                              ※ {item.specialInstructions}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-800">
+                          <span className="text-base">{item.quantity}개</span>
+                          <span className="text-base font-medium">{Number(Number(item.menuItem.price) * item.quantity).toLocaleString()}원</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* 고객 정보 */}
+                <div className="p-4 border-b border-gray-100">
+                  <h4 className="text-base font-bold mb-3 text-gray-800">
+                    고객 정보
+                  </h4>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">주문자:</span>
+                      <span className="text-sm font-medium text-gray-900">{order.customerName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">연락처:</span>
+                      <span className="text-sm font-medium text-gray-900">{order.customerPhone}</span>
+                    </div>
                   </div>
-                  <div className="mt-4 flex justify-between items-center">
-                    <p className="font-medium text-[#FF7355]">
-                      총 금액: {Number(order.finalAmount).toLocaleString()}원
+                </div>
+
+                {/* 총 금액과 액션 버튼 */}
+                <div className="p-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-sm text-gray-500">총 금액</span>
+                    <p className="text-lg font-bold text-[#FF6B00]">
+                      {Number(order.finalAmount).toLocaleString()}원
                     </p>
-                    <div className="flex gap-2">
-                      {order.status === OrderStatus.PENDING && (
-                        <>
-                          <button
-                            onClick={() => handleStatusChange(order.id, OrderStatus.REJECTED)}
-                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                          >
-                            주문 거부
-                          </button>
-                          <button
-                            onClick={() => handleStatusChange(order.id, OrderStatus.ACCEPTED)}
-                            className="px-4 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
-                          >
-                            주문 수락
-                          </button>
-                        </>
-                      )}
-                      {order.status === OrderStatus.ACCEPTED && (
+                  </div>
+
+                  <div className="flex justify-end">
+                    {order.status === OrderStatus.PENDING && (
+                      <div className="flex gap-2 w-full">
+                        <button
+                          onClick={() => handleRejectClick(order.id)}
+                          disabled={changingStatus !== null || isRefreshing}
+                          className={`w-full px-4 py-2 text-sm font-medium bg-gray-400 text-white rounded-lg transition-colors ${
+                            changingStatus !== null || isRefreshing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-500'
+                          }`}
+                        >
+                          주문거절
+                        </button>
                         <button
                           onClick={() => handleStatusChange(order.id, OrderStatus.PREPARING)}
-                          className="px-4 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
+                          disabled={changingStatus !== null || isRefreshing}
+                          className={`w-full px-4 py-2 text-sm font-medium bg-[#FF6B00] text-white rounded-lg transition-colors ${
+                            changingStatus !== null || isRefreshing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#FF8A3D]'
+                          }`}
                         >
-                          준비 시작
+                          수락하기
                         </button>
-                      )}
-                      {order.status === OrderStatus.PREPARING && (
-                        <button
-                          onClick={() => handleStatusChange(order.id, OrderStatus.READY)}
-                          className="px-4 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
-                        >
-                          준비 완료
-                        </button>
-                      )}
-                      {order.status === OrderStatus.READY && (
-                        <button
-                          onClick={() => handleStatusChange(order.id, OrderStatus.COMPLETED)}
-                          className="px-4 py-2 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
-                        >
-                          픽업 완료
-                        </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
+                    {order.status === OrderStatus.PREPARING && (
+                      <button
+                        onClick={() => handleStatusChange(order.id, OrderStatus.READY)}
+                        disabled={changingStatus !== null || isRefreshing}
+                        className={`w-full px-4 py-2 text-sm font-medium bg-[#FF6B00] text-white rounded-lg transition-colors ${
+                          changingStatus !== null || isRefreshing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#FF8A3D]'
+                        }`}
+                      >
+                        완료
+                      </button>
+                    )}
+                    {order.status === OrderStatus.READY && (
+                      <button
+                        onClick={() => handleStatusChange(order.id, OrderStatus.COMPLETED)}
+                        disabled={changingStatus !== null || isRefreshing}
+                        className={`w-full px-4 py-2 text-sm font-medium bg-[#FF6B00] text-white rounded-lg transition-colors ${
+                          changingStatus !== null || isRefreshing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-[#FF8A3D]'
+                        }`}
+                      >
+                        픽업완료
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
             ))
           ) : (
-            <div className="text-center py-8 bg-white rounded-xl shadow-sm">
+            <div className="col-span-2 text-center py-12 bg-white rounded-2xl shadow-sm">
               <p className="text-gray-500">해당 조건의 주문이 없습니다.</p>
             </div>
           )}
@@ -334,11 +494,11 @@ export default function OrdersList() {
               {Array.from({ length: Math.ceil(totalCount / (queryParams.limit || 10)) }, (_, i) => i + 1).map((page) => (
                 <button
                   key={page}
-                  onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-1 rounded ${
+                  onClick={() => handlePageChange(page)}
+                  className={`px-4 py-2 text-sm rounded-full ${
                     currentPage === page
-                      ? 'bg-[#FF7355] text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-100'
+                      ? 'bg-[#FF6B00] text-white'
+                      : 'bg-white text-gray-600 hover:bg-[#FFF5EE]'
                   }`}
                 >
                   {page}
