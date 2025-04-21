@@ -92,7 +92,7 @@ export default function PersonalInfoPage() {
       }
       
       localStorage.removeItem(`cart_${storeId}`);
-      router.push(`/u/order/${result.data.orderNumber}`);
+      router.push(`/order/${result.data.orderNumber}`);
 
     } catch (error) {
       console.error('주문 에러:', error);
