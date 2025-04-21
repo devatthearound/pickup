@@ -11,7 +11,7 @@ export interface CookieSetOptions {
 
 export const setCookie = (name: string, value: string, options?: CookieSetOptions) => {
     if (getCookie(name)) deleteCookie(name, options);
-    return Cookies.set(name, value, { ...options, path: 'https://www.ezpickup.kr' });
+    return Cookies.set(name, value, { ...options, path: '/' });
 }
 
 export const getCookie = (name: string) => {
@@ -19,5 +19,5 @@ export const getCookie = (name: string) => {
 }
 
 export const deleteCookie = (name: string, options?: CookieSetOptions) => {
-    return Cookies.remove(name, { ...options, path: 'https://www.ezpickup.kr' });
+    return Cookies.remove(name, { ...options, path: '/' });
 }
