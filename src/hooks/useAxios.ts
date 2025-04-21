@@ -2,7 +2,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 import { getCookie, setCookie, deleteCookie } from '@/lib/useCookie';
 import { useRouter } from 'next/navigation';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.ezpickup.kr';
 // const API_URL = 'http://localhost:3001';
 export const useAxios = () => {
   const { accessToken, setAccessToken } = useAuth();
