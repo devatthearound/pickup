@@ -390,11 +390,6 @@ export default function OrdersList() {
                           <span className="font-medium text-gray-900">
                             {item.menuItem.name}
                           </span>
-                          {item.specialInstructions && (
-                            <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
-                              ※ {item.specialInstructions}
-                            </p>
-                          )}
                         </div>
                         <div className="flex items-center gap-2 text-gray-800">
                           <span className="text-base">{item.quantity}개</span>
@@ -403,6 +398,12 @@ export default function OrdersList() {
                       </li>
                     ))}
                   </ul>
+
+                  {order.orderItems[0].specialInstructions && (
+                    <p className="mt-3 text-sm bg-[#FFF5EE] text-[#FF6B00] border border-[#FFE2D3] px-4 py-3 rounded-lg">
+                      <span className="font-bold">요청사항:</span> {order.orderItems[0].specialInstructions}
+                    </p>
+                  )}
                 </div>
 
                 {/* 고객 정보 */}

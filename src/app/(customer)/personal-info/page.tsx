@@ -14,7 +14,8 @@ export default function PersonalInfoPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [specialInstructions, setSpecialInstructions] = useState('');
-  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(true);
+  const [showPhoneConfirm, setShowPhoneConfirm] = useState(false);
   const axiosInstance = useAxios();
 
   useEffect(() => {
@@ -36,7 +37,16 @@ export default function PersonalInfoPage() {
     setSpecialInstructions(request);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const formatPhoneNumber = (phone: string) => {
+    if (phone.length === 11) {
+      return `${phone.slice(0, 3)}-${phone.slice(3, 7)}-${phone.slice(7)}`;
+    } else if (phone.length === 10) {
+      return `${phone.slice(0, 3)}-${phone.slice(3, 6)}-${phone.slice(6)}`;
+    }
+    return phone;
+  };
+
+  const handleOrderClick = (e: React.FormEvent) => {
     e.preventDefault();
     
     const nameValid = name.trim().length > 0;
@@ -49,6 +59,12 @@ export default function PersonalInfoPage() {
       return;
     }
 
+    // 전화번호 확인 팝업 표시
+    setShowPhoneConfirm(true);
+  };
+
+  const handleSubmit = async () => {
+    setShowPhoneConfirm(false);
     setIsLoading(true);
     setError(null);
 
@@ -125,7 +141,7 @@ export default function PersonalInfoPage() {
           <p>• 주문 및 픽업 관련 알림은 알림톡으로 발송됩니다.</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleOrderClick} className="space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               이름
@@ -151,8 +167,12 @@ export default function PersonalInfoPage() {
             </label>
             <input
               type="tel"
+              inputMode="numeric"
+              pattern="[0-9]*"
               id="phone"
               value={phone}
+              maxLength={11}
+              minLength={11}
               onChange={(e) => setPhone(e.target.value)}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF7355] ${
                 !isPhoneValid ? 'border-red-500' : 'border-gray-300'
@@ -202,6 +222,38 @@ export default function PersonalInfoPage() {
         </form>
       </div>
 
+      {/* 전화번호 확인 모달 */}
+      {showPhoneConfirm && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-sm mx-4 rounded-xl shadow-xl">
+            <div className="p-6">
+              <h3 className="text-lg font-bold text-center mb-4">전화번호 확인</h3>
+              <p className="text-center mb-6">
+                아래 전화번호로 알림톡이 발송됩니다.<br />
+                전화번호가 정확한지 확인해주세요.
+              </p>
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <p className="text-center text-lg font-bold text-[#FF7355]">{formatPhoneNumber(phone)}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowPhoneConfirm(false)}
+                  className="flex-1 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200"
+                >
+                  수정하기
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="flex-1 py-3 bg-[#FF7355] text-white font-medium rounded-lg hover:bg-[#FF6344]"
+                >
+                  확인
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 하단 주문 버튼 */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
         <div className="flex items-center justify-center mb-3">
@@ -240,7 +292,7 @@ export default function PersonalInfoPage() {
         </div>
         <button
           type="submit"
-          onClick={handleSubmit}
+          onClick={handleOrderClick}
           disabled={isLoading}
           className={`w-full py-3.5 bg-[#FF7355] text-white font-medium rounded-lg hover:bg-[#FF6344] transition-colors ${
             isLoading ? 'opacity-50 cursor-not-allowed' : ''

@@ -76,6 +76,9 @@ export default function StorePage() {
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isStoreOpen, setIsStoreOpen] = useState(true);
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (typeof window !== 'undefined') {
@@ -103,12 +106,44 @@ export default function StorePage() {
   useEffect(() => {
     const fetchStoreInfo = async () => {
       try {
-        const response = await axiosInstance.get(`/stores/${storeDomain}?type=domain`);
-        const data = await response.data.data;
+        setLoading(true);
+        const response = await axiosInstance.get(`/stores/${storeDomain}?type=domain`, {
+          validateStatus: (status) => true // 모든 상태 코드를 에러로 간주하지 않고 처리
+        });
+        
+        // 상태 코드에 따른 처리
+        if (response.status !== 200) {
+          // 400, 404 등 오류 응답 처리
+          const errorData = response.data;
+          
+          if (response.status === 400 && errorData.message === '상점이 운영시간이 아닙니다.') {
+            setIsStoreOpen(false);
+            setError('지금은 운영시간이 아닙니다.');
+          } else {
+            setIsStoreOpen(false);
+            setError(errorData.message || '가게 정보를 불러오는데 실패했습니다.');
+          }
+          return;
+        }
+        
+        // 성공 응답 처리
+        const { success, data, message } = response.data;
+        
+        if (!success) {
+          setIsStoreOpen(false);
+          setError(message || '가게 정보를 불러오는데 실패했습니다.');
+          return;
+        }
+        
         setStoreInfo(data);
         setImageUrl(data.logoImageUrl);
-      } catch (error) {
+        setIsStoreOpen(true);
+      } catch (error: any) {
         console.error('가게 정보를 불러오는데 실패했습니다:', error);
+        setIsStoreOpen(false);
+        setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -273,8 +308,87 @@ export default function StorePage() {
     router.push(`/cart`);
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#FF7355]"></div>
+      </div>
+    );
+  }
+
+  // 가게가 운영시간이 아닐 때의 화면
+  if (!isStoreOpen) {
+    return (
+      <div className="max-w-md mx-auto bg-white min-h-screen">
+        <div className="sticky top-0 z-20 bg-white">
+          <div className="flex items-center justify-between p-2">
+            <div className="flex items-center">
+              <button onClick={() => router.back()} className="p-1">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h1 className="text-lg font-bold">가게 정보</h1>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center min-h-[80vh] p-6">
+          <div className="w-32 h-32 mb-6 bg-gray-50 rounded-full flex items-center justify-center">
+            <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          
+          <h2 className="text-xl font-bold text-gray-800 mb-2">지금은 운영시간이 아닙니다</h2>
+          <p className="text-gray-600 text-center mb-8">{error}</p>
+          
+          <button
+            onClick={() => router.back()}
+            className="px-8 py-3 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
+          >
+            돌아가기
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!storeInfo) {
-    return <div className="flex justify-center items-center h-screen">로딩중...</div>;
+    return (
+      <div className="max-w-md mx-auto bg-white min-h-screen">
+        <div className="sticky top-0 z-20 bg-white">
+          <div className="flex items-center justify-between p-2">
+            <div className="flex items-center">
+              <button onClick={() => router.back()} className="p-1">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <h1 className="text-lg font-bold">가게 정보</h1>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col items-center justify-center min-h-[80vh] p-6">
+          <div className="w-32 h-32 mb-6 bg-gray-50 rounded-full flex items-center justify-center">
+            <svg className="w-20 h-20 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          
+          <h2 className="text-xl font-bold text-gray-800 mb-2">가게 정보를 불러올 수 없습니다</h2>
+          <p className="text-gray-600 text-center mb-8">{error || '잠시 후 다시 시도해주세요.'}</p>
+          
+          <button
+            onClick={() => router.back()}
+            className="px-8 py-3 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
+          >
+            돌아가기
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -495,7 +609,7 @@ export default function StorePage() {
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white">
           <button 
             onClick={handleCheckout}
-            className="w-full py-3.5 bg-[#2AC1BC] text-white font-medium rounded-lg"
+            className="w-full py-3.5 bg-[#FF7355] text-white font-medium rounded-lg"
           >
             {getTotalQuantity()}개 {cartItems.reduce((sum, item) => sum + (parseInt(item.discountedPrice || item.price) * item.quantity), 0).toLocaleString('ko-KR')}원 주문하기
           </button>

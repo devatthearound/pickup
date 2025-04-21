@@ -218,7 +218,7 @@ export default function CartPage() {
         </div>
         <button
           onClick={handleCheckout}
-          className="w-full py-3.5 bg-[#FF7355] text-white font-medium rounded-lg hover:bg-[#FF6344] transition-colors"
+          className="w-full py-3.5 bg-[#FF6B00] text-white font-medium rounded-lg hover:bg-[#FF6344] transition-colors"
         >
           주문하기
         </button>
