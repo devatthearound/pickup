@@ -305,6 +305,7 @@ export default function StorePage() {
 
   const handleCheckout = () => {
     if (cartItems.length === 0) return;
+    localStorage.setItem('currentStoreId', storeDomain || '');
     router.push(`/cart`);
   };
 

@@ -20,7 +20,7 @@ interface MenuItem {
   stockQuantity: number | null;
 }
 
-interface CartItem extends MenuItem {
+interface CartItem extends MenuItem { 
   quantity: number;
 }
 
