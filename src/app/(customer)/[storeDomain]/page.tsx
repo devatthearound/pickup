@@ -4,10 +4,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useStoreProfile } from '@/store/useStoreProfile';
-import StoreProfileImage from '@/components/StoreProfileImage';
 import { useParams } from 'next/navigation';
 import { useAxios } from '@/hooks/useAxios';
-import type { SVGProps } from 'react';
 
 interface StoreInfo {
   id: number;
@@ -465,9 +463,9 @@ export default function StorePage() {
                           <div className="flex items-start gap-2 mb-1">
                             <h3 className="font-medium text-base truncate">
                               {item.name}
-                              {itemIndex < 3 && index === 0 && (
+                              {/* {itemIndex < 3 && index === 0 && (
                                 <span className="text-[#5773FF] text-sm ml-2">인기 {itemIndex + 1}위</span>
-                              )}
+                              )} */}
                             </h3>
                             {!item.isAvailable && (
                               <span className="text-xs text-red-500 shrink-0">품절</span>
@@ -493,12 +491,22 @@ export default function StorePage() {
                           className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0 cursor-pointer"
                           onClick={() => handleMenuItemClick(item)}
                         >
-                          <Image
-                            src={item.imageUrl || '/images/default-menu.png'}
-                            alt={item.name}
-                            fill
-                            className="object-cover"
-                          />
+                          {
+                            item.imageUrl ? (
+                              <Image
+                                src={item.imageUrl || '/images/default-menu.png'}
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                                <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                              </div>
+                            )
+                          }
                         </div>
                       </div>
                     );
@@ -519,12 +527,22 @@ export default function StorePage() {
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 transition-opacity duration-300">
           <div className="fixed inset-0 bg-white overflow-y-auto">
             <div className="relative w-full h-64">
-              <Image
-                src={selectedMenuItem.imageUrl || '/images/default-menu.png'}
-                alt={selectedMenuItem.name}
-                fill
-                className="object-cover"
-              />
+              {
+                selectedMenuItem.imageUrl ? (
+                  <Image
+                    src={selectedMenuItem.imageUrl || '/images/default-menu.png'}
+                    alt={selectedMenuItem.name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                    <svg className="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                )
+              }
               <button
                 onClick={() => setShowMenuDetail(false)}
                 className="absolute top-4 right-4 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/90 transition-colors"
