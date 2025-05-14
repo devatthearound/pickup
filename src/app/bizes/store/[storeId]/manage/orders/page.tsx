@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useAxios } from '@/hooks/useAxios';
-import { OrderStatus, Order, PaymentStatus } from '@/types/order';
-import { useParams } from 'next/navigation';
+import { OrderStatus, Order } from '@/types/order';
+import { useParams, useRouter } from 'next/navigation';
+import { AxiosError } from 'axios';
 
 interface OrderQueryParams {
   page?: number;
@@ -31,7 +32,7 @@ export default function OrdersList() {
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const axiosInstance = useAxios();
-
+  const router = useRouter();
   // 오늘 날짜 설정
   const today = new Date();
   const startOfDay = new Date(today.setHours(0, 0, 0, 0)).toISOString().split('T')[0];
@@ -66,6 +67,10 @@ export default function OrdersList() {
       setOrders(result.data.data);
       setTotalCount(result.data.meta.total);
     } catch (err) {
+      if (err instanceof AxiosError && err.response && err.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);
@@ -122,6 +127,10 @@ export default function OrdersList() {
 
       await fetchOrders();
     } catch (err) {
+      if (err instanceof AxiosError && err.response && err.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('주문 상태 변경 실패:', err);
       alert(err instanceof Error ? err.message : '주문 상태 변경에 실패했습니다.');
     } finally {
@@ -209,6 +218,10 @@ export default function OrdersList() {
       setRejectReason('');
       setSelectedOrderId(null);
     } catch (err) {
+      if (err instanceof AxiosError && err.response && err.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('주문 거절 실패:', err);
       alert(err instanceof Error ? err.message : '주문 거절에 실패했습니다.');
     } finally {

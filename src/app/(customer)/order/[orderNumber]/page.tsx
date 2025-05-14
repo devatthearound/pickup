@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
 
 interface OrderItem {
   id: number;
@@ -97,10 +97,10 @@ export default function OrderDetailPage() {
   const [searchPhone, setSearchPhone] = useState('');
   const axiosInstance = useAxios();
 
-  const fetchOrder = async (phone: string) => {
+  const fetchOrder = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`/orders/by-number-and-phone/${orderNumber}/${phone}`);
+      const response = await axiosInstance.get(`/orders/by-number/${orderNumber}`);
       if (response.status !== 200) {
         const errorData = await response.data;
         throw new Error(errorData.message || '주문을 찾을 수 없습니다.');
@@ -119,21 +119,16 @@ export default function OrderDetailPage() {
       setOrder(result.data);
       setError(null);
     } catch (err) {
+      if (err instanceof AxiosError && err.response && err.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       setError(err instanceof Error ? err.message : '주문 조회에 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchPhone) {
-      setError('전화번호를 입력해주세요.');
-      return;
-    }
-
-    await fetchOrder(searchPhone);
-  };
 
   const getStatusMessage = (status: string) => {
     switch (status) {
@@ -154,6 +149,10 @@ export default function OrderDetailPage() {
     }
   };
 
+  useEffect(() => {
+    fetchOrder();
+  }, []);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -162,63 +161,8 @@ export default function OrderDetailPage() {
     );
   }
 
-  if (error || !order) {
-    return (
-      <div className="max-w-md mx-auto bg-white min-h-screen">
-        <div className="sticky top-0 z-20 bg-white">
-          <div className="flex items-center justify-between p-2">
-            <button onClick={() => router.back()} className="p-1">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <h1 className="text-lg font-bold">주문 검색</h1>
-            <div className="w-6"></div>
-          </div>
-        </div>
-
-        <div className="p-4">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="mb-6">
-              <h2 className="text-lg font-bold mb-2">주문 번호</h2>
-              <p className="text-gray-600">{orderNumber}</p>
-            </div>
-            <form onSubmit={handleSearch} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  전화번호
-                </label>
-                <input
-                  type="text"
-                  value={searchPhone}
-                  onChange={(e) => setSearchPhone(e.target.value)}
-                  placeholder="전화번호 입력"
-                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#FF7355] focus:border-transparent"
-                />
-              </div>
-              {error && (
-                <p className="text-sm text-red-500">{error}</p>
-              )}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => router.back()}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-4 py-3 bg-[#FF7355] text-white rounded-lg hover:bg-[#FF6344] transition-colors"
-                >
-                  검색
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    );
+  if (!order) {
+    return <div>주문 정보를 불러오는 중입니다...</div>;
   }
 
   return (
@@ -233,7 +177,7 @@ export default function OrderDetailPage() {
           </button>
           <h1 className="text-lg font-bold">주문 상세</h1>
           <button
-            onClick={() => fetchOrder(order.customerPhone)}
+            onClick={() => fetchOrder()}
             className="p-1"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

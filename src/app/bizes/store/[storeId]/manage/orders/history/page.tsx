@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { useAxios } from '@/hooks/useAxios';
 import { OrderStatus,Order } from '@/types/order';
+import { AxiosError } from 'axios';
 
 
 interface OrderQueryParams {
@@ -27,7 +28,7 @@ export default function StoreOrdersHistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | ''>('');
   const axiosInstance = useAxios();
-
+  const router = useRouter();
   const [dateRange, setDateRange] = useState({
     startDate: '',
     endDate: ''
@@ -62,6 +63,10 @@ export default function StoreOrdersHistoryPage() {
       setOrders(result.data.data);
       setTotalCount(result.data.meta.total);
     } catch (err) {
+      if (err instanceof AxiosError && err.response && err.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
     } finally {
       setLoading(false);

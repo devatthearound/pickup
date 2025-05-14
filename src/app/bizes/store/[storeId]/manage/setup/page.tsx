@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'react-hot-toast';
 import StoreProfileImage from '@/components/StoreProfileImage';
 import { useStoreProfile } from '@/store/useStoreProfile';
 import { useAxios } from '@/hooks/useAxios';
 import Image from 'next/image';
+import { AxiosError } from 'axios';
 
 interface BusinessHours {
   day: string;
@@ -57,7 +58,7 @@ interface UpdateStoreResponse {
 export default function StoreSetupPage() {
   const { storeId } = useParams();
   const axiosInstance = useAxios();
-
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isHoursLoading, setIsHoursLoading] = useState(true);
@@ -140,6 +141,10 @@ export default function StoreSetupPage() {
         }
       }
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('매장 정보 로딩 실패:', error);
       toast.error('매장 정보를 불러오는데 실패했습니다');
     } finally {
@@ -188,6 +193,10 @@ export default function StoreSetupPage() {
         setHasOperatingHoursData(false);
       }
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('영업시간 로딩 실패:', error);
       toast.error('영업시간 정보를 불러오는데 실패했습니다');
       setHasOperatingHoursData(false);
@@ -254,6 +263,10 @@ export default function StoreSetupPage() {
 
       return responseData;
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('스토어 정보 업데이트 실패:', error);
       toast.error(error instanceof Error ? error.message : '스토어 정보 업데이트에 실패했습니다');
       throw error;
@@ -287,6 +300,10 @@ export default function StoreSetupPage() {
         throw new Error(responseData.message || '영업시간 업데이트 응답 실패');
       }
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('영업시간 업데이트 실패:', error);
       toast.error(error instanceof Error ? error.message : '영업시간 업데이트 중 오류가 발생했습니다.');
       throw error;
@@ -321,6 +338,10 @@ export default function StoreSetupPage() {
         })));
       }
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('특별 영업일/휴무일 로딩 실패:', error);
       toast.error('특별 영업일/휴무일 정보를 불러오는데 실패했습니다');
     } finally {
@@ -377,6 +398,10 @@ export default function StoreSetupPage() {
         fetchSpecialDays(); // 목록 새로고침
       }
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('특별 영업일/휴무일 추가 실패:', error);
       toast.error('특별 영업일/휴무일 추가에 실패했습니다');
     }
@@ -403,6 +428,10 @@ export default function StoreSetupPage() {
         setSpecialDays(specialDays.filter(day => day.id !== id));
       }
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('특별 영업일/휴무일 삭제 실패:', error);
       toast.error('특별 영업일/휴무일 삭제에 실패했습니다');
     }
@@ -736,7 +765,7 @@ export default function StoreSetupPage() {
               <p className="text-sm text-yellow-700">
                 설정된 영업시간 정보가 없습니다.
                 <br/>
-                영업시간을 설정하고 '영업시간 저장' 버튼을 눌러주세요.
+                영업시간을 설정하고 &apos;영업시간 저장&apos; 버튼을 눌러주세요.
               </p>
             </div>
           ) : null}

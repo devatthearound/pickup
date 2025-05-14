@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAxios } from '@/hooks/useAxios';
+import Link from 'next/link';
 
 interface RegisterFormData {
   email: string;
@@ -357,9 +358,9 @@ export default function RegisterPage() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             이미 계정이 있으신가요?{' '}
-            <a href="/bizes/login" className="font-medium text-[#FF7355] hover:text-[#FF6344]">
+            <Link href="/bizes/login" className="font-medium text-[#FF7355] hover:text-[#FF6344]">
               로그인하기
-            </a>
+            </Link>
           </p>
         </div>
       </div>

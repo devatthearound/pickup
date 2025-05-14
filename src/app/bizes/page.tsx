@@ -1,9 +1,9 @@
 'use client';
 
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 
 interface Store {
   id: string;
@@ -56,6 +56,10 @@ export default function StoreMainPage() {
       setStores(result.data);
       console.log('스토어 목록 설정 완료:', result.data.length);
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('스토어 정보 조회 실패:', error);
       const axiosError = error as { response?: { status?: number } };
       if (axiosError.response?.status === 401) {

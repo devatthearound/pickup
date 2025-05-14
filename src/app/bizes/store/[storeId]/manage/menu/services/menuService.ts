@@ -1,5 +1,6 @@
 import { useAxios } from '@/hooks/useAxios';
-
+import { AxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
 const API_BASE_URL = '';
 
 export interface MenuCategory {
@@ -68,6 +69,7 @@ export interface OptionItem {
 
 export const useMenuService = () => {
   const axiosInstance = useAxios();
+  const router = useRouter();
 
   return {
     // 메뉴 카테고리 관련 API
@@ -77,38 +79,78 @@ export const useMenuService = () => {
       isActive?: boolean;
       storeId?: number;
     }) => {
-      const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories${queryString}`);
-      return response.data;
+      try {
+        const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories${queryString}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     getCategoryById: async (id: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     getStoreCategories: async (storeId: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories/store/${storeId}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-categories/store/${storeId}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     createCategory: async (storeId: number, data: {
       name: string;
       displayOrder?: number;
       isActive?: boolean;
     }) => {
-      const response = await axiosInstance.post(`${API_BASE_URL}/menu-categories/store/${storeId}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.post(`${API_BASE_URL}/menu-categories/store/${storeId}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     updateCategory: async (id: number, data: Partial<MenuCategory>) => {
-      const response = await axiosInstance.patch(`${API_BASE_URL}/menu-categories/${id}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.patch(`${API_BASE_URL}/menu-categories/${id}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     deleteCategory: async (id: number) => {
-      const response = await axiosInstance.delete(`${API_BASE_URL}/menu-categories/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.delete(`${API_BASE_URL}/menu-categories/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     // 메뉴 아이템 관련 API
@@ -122,59 +164,130 @@ export const useMenuService = () => {
       isNew?: boolean;
       isRecommended?: boolean;
     }) => {
-      const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items${queryString}`);
-      return response.data;
+      try {
+        const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items${queryString}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     getMenuItem: async (id: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     getStoreMenuItems: async (storeId: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/store/${storeId}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/store/${storeId}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     getCategoryMenuItems: async (categoryId: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/category/${categoryId}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/category/${categoryId}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     getPopularMenuItems: async (storeId: number, limit: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/popular/store/${storeId}?limit=${limit}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/popular/store/${storeId}?limit=${limit}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     getNewMenuItems: async (storeId: number, limit: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/new/store/${storeId}?limit=${limit}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/new/store/${storeId}?limit=${limit}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     getRecommendedMenuItems: async (storeId: number, limit: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/recommended/store/${storeId}?limit=${limit}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/recommended/store/${storeId}?limit=${limit}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     createMenuItem: async (storeId: number, data: FormData) => {
-      const response = await axiosInstance.post(`${API_BASE_URL}/menu-items/store/${storeId}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.post(`${API_BASE_URL}/menu-items/store/${storeId}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     updateMenuItem: async (id: number, data: FormData) => {
-      const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/${id}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/${id}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     deleteMenuItem: async (id: number) => {
-      const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     updateMenuStock: async (id: number, stockQuantity: number) => {
-      const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/${id}/stock`, stockQuantity);
-      return response.data;
+      try {
+        const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/${id}/stock`, stockQuantity);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     // 옵션 관련 API
@@ -184,71 +297,155 @@ export const useMenuService = () => {
       storeId?: number;
       isRequired?: boolean;
     }) => {
-      const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-      const response = await axiosInstance.get(`${API_BASE_URL}/options/groups${queryString}`);
-      return response.data;
+      try {
+        const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+        const response = await axiosInstance.get(`${API_BASE_URL}/options/groups${queryString}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     getOptionGroup: async (id: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/options/groups/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/options/groups/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     createOptionGroup: async (storeId: number, data: Partial<OptionGroup>) => {
-      const response = await axiosInstance.post(`${API_BASE_URL}/options/groups/store/${storeId}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.post(`${API_BASE_URL}/options/groups/store/${storeId}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     updateOptionGroup: async (id: number, data: Partial<OptionGroup>) => {
-      const response = await axiosInstance.patch(`${API_BASE_URL}/options/groups/${id}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.patch(`${API_BASE_URL}/options/groups/${id}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     deleteOptionGroup: async (id: number) => {
-      const response = await axiosInstance.delete(`${API_BASE_URL}/options/groups/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.delete(`${API_BASE_URL}/options/groups/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     // 옵션 아이템 관련 API
     getOptionItems: async (groupId: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/options/items/group/${groupId}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/options/items/group/${groupId}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     createOptionItem: async (groupId: number, data: Partial<OptionItem>) => {
-      const response = await axiosInstance.post(`${API_BASE_URL}/options/items/group/${groupId}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.post(`${API_BASE_URL}/options/items/group/${groupId}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     updateOptionItem: async (id: number, data: Partial<OptionItem>) => {
-      const response = await axiosInstance.patch(`${API_BASE_URL}/options/items/${id}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.patch(`${API_BASE_URL}/options/items/${id}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     deleteOptionItem: async (id: number) => {
-      const response = await axiosInstance.delete(`${API_BASE_URL}/options/items/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.delete(`${API_BASE_URL}/options/items/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     // 메뉴-옵션 연결 관련 API
     getMenuOptionGroups: async (menuId: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/options/menu-option-groups/menu/${menuId}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/options/menu-option-groups/menu/${menuId}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     createMenuOptionGroup: async (data: { menuId: number; groupId: number }) => {
-      const response = await axiosInstance.post(`${API_BASE_URL}/options/menu-option-groups`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.post(`${API_BASE_URL}/options/menu-option-groups`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     updateMenuOptionGroup: async (id: number, data: { displayOrder?: number }) => {
-      const response = await axiosInstance.patch(`${API_BASE_URL}/options/menu-option-groups/${id}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.patch(`${API_BASE_URL}/options/menu-option-groups/${id}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
-
     deleteMenuOptionGroup: async (id: number) => {
-      const response = await axiosInstance.delete(`${API_BASE_URL}/options/menu-option-groups/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.delete(`${API_BASE_URL}/options/menu-option-groups/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
 
     // 메뉴 가용성 관련 API
@@ -257,8 +454,15 @@ export const useMenuService = () => {
       isAvailable?: boolean;
     }) => {
       const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/${menuId}/availability${queryString}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/${menuId}/availability${queryString}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+      }
+      }
     },
 
     createMenuAvailability: async (menuId: number, data: {
@@ -267,18 +471,39 @@ export const useMenuService = () => {
       endTime: string;
       isAvailable: boolean;
     }) => {
-      const response = await axiosInstance.post(`${API_BASE_URL}/menu-items/${menuId}/availability`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.post(`${API_BASE_URL}/menu-items/${menuId}/availability`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+      }
+      }
     },
 
     deleteAllMenuAvailability: async (menuId: number) => {
-      const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/${menuId}/availability`);
-      return response.data;
+      try {
+        const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/${menuId}/availability`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+      }
+      }
     },
 
     getAvailabilityById: async (id: number) => {
-      const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/availability/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.get(`${API_BASE_URL}/menu-items/availability/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+      }
+      }
     },
 
     updateAvailability: async (id: number, data: {
@@ -286,13 +511,27 @@ export const useMenuService = () => {
       endTime?: string;
       isAvailable?: boolean;
     }) => {
-      const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/availability/${id}`, data);
-      return response.data;
+      try {
+        const response = await axiosInstance.patch(`${API_BASE_URL}/menu-items/availability/${id}`, data);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+      }
+      }
     },
 
     deleteAvailability: async (id: number) => {
-      const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/availability/${id}`);
-      return response.data;
+      try {
+        const response = await axiosInstance.delete(`${API_BASE_URL}/menu-items/availability/${id}`);
+        return response.data;
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+      }
     },
   };
 }; 

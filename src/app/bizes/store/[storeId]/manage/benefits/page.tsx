@@ -4,6 +4,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
 
 interface Benefit {
   id: number;
@@ -37,6 +38,7 @@ interface PaginatedResponse<T> {
 
 export default function BenefitsPage() {
   const { storeId } = useParams();
+  const router = useRouter();
   const axiosInstance = useAxios();
   const [benefits, setBenefits] = useState<Benefit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -61,6 +63,10 @@ export default function BenefitsPage() {
         const apiResponse: ApiResponse<PaginatedResponse<Benefit>> = await response.data;
         setBenefits(apiResponse.data.data || []);
       } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
         console.error('혜택 목록 로딩 실패:', error);
         toast.error('혜택 목록을 불러오는데 실패했습니다');
       } finally {
@@ -102,6 +108,10 @@ export default function BenefitsPage() {
       });
       toast.success('혜택이 추가되었습니다');
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('혜택 추가 실패:', error);
       toast.error(error instanceof Error ? error.message : '혜택 추가에 실패했습니다');
     }
@@ -122,6 +132,10 @@ export default function BenefitsPage() {
         toast.success('혜택이 삭제되었습니다');
       }
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('혜택 삭제 실패:', error);
       toast.error('혜택 삭제에 실패했습니다');
     }
@@ -145,6 +159,10 @@ export default function BenefitsPage() {
       
       toast.success(`혜택이 ${updatedBenefit.isActive ? '활성화' : '비활성화'}되었습니다`);
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('혜택 수정 실패:', error);
       toast.error(error instanceof Error ? error.message : '혜택 수정에 실패했습니다');
     }

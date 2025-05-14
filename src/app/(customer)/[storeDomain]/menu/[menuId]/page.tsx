@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
 
 interface MenuItem {
   id: number;
@@ -55,6 +56,10 @@ export default function MenuDetailPage() {
         const data = await response.data.data;
         setMenuItem(data);
       } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
         console.error('메뉴 정보를 불러오는데 실패했습니다:', error);
       }
     };

@@ -2,13 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { setCookie } from '@/lib/useCookie';
 import { useAxios } from '@/hooks/useAxios';
+import Link from 'next/link';
 export default function LoginPage() {
   const axiosInstance = useAxios();
   const router = useRouter();
-  const { setAccessToken } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -51,15 +50,17 @@ export default function LoginPage() {
       // 토큰 저장
       const { accessToken, refreshToken } = response.data.data;
       // 토큰 저장
-      setAccessToken(accessToken);
-      // 리프레시 토큰 저장
-      setCookie("refreshToken", refreshToken, {
+      // 토큰 저장 로직 추가
+      setCookie('pu-atac', accessToken, {
+        expires: new Date(new Date().setMinutes(new Date().getMinutes() + 15)),
+      });    
+
+      setCookie('pu-atrf', refreshToken, {
         expires: new Date(new Date().setDate(new Date().getDate() + 14)),
       });
-      
+     
       // React Native 앱에서 토큰 저장
       if (typeof window !== 'undefined' && window.ReactNativeWebView) {
-        console.log('refreshToken', refreshToken);
         window.ReactNativeWebView.postMessage(JSON.stringify({
           type: 'TOKEN_UPDATE',
           token: refreshToken
@@ -178,12 +179,12 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6">
-            <a
+            <Link
               href="/bizes/register"
               className="w-full flex justify-center py-4 px-4 border-2 border-[#FF7355] rounded-lg font-medium text-[#FF7355] hover:bg-[#FF7355] hover:text-white transition-colors"
             >
               사장님 계정 만들기
-            </a>
+            </Link>
           </div>
         </div>
       </div>

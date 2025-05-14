@@ -1,8 +1,10 @@
 'use client';
 
 import { setCookie } from '@/lib/useCookie';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
 // FCM 토큰 등록을 위한 타입 정의
 type DeviceType = 'IOS' | 'ANDROID' | 'WEB';
 
@@ -18,8 +20,20 @@ interface FCMTokenData {
   buildNumber: string;
 }
 
+interface ExpoDebug {
+  messages: string[];
+  logMessage: (msg: string) => void;
+}
+
+declare global {
+  interface Window {
+    expoDebug: ExpoDebug;
+  }
+}
+
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const axiosInstance = useAxios();
+  const router = useRouter();
   // const [connectionStatus, setConnectionStatus] = useState('확인 중...');
   
   useEffect(() => {
@@ -58,10 +72,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
         // AUTO_LOGIN 메시지 처리
         if (messageData.type === 'AUTO_LOGIN' && messageData.token) {
-          console.log('AUTO_LOGIN 토큰 수신:', messageData.token);
           // 토큰 저장 로직 추가
-          setCookie('refreshToken', messageData.token, {
+          setCookie('pu-atrf', messageData.token, {
             expires: new Date(new Date().setDate(new Date().getDate() + 14)),
+          });
+
+          setCookie('pu-atac', messageData.token, {
+            expires: new Date(new Date().setMinutes(new Date().getMinutes() + 15)),
           });
         }
 
@@ -89,12 +106,17 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
         console.log('FCM 토큰 등록 성공:', response.data);
       } catch (error) {
-        console.error('FCM 토큰 등록 실패:', error);
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+        } else {
+          console.error('FCM 토큰 등록 실패:', error);
+
+        }
       }
     };
 
     // 디버깅을 위한 글로벌 객체
-    (window as any).expoDebug = {
+    window.expoDebug = {
       messages: [],
       logMessage: function(msg: string) {
         this.messages.push(msg);

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useStoreProfile } from '@/store/useStoreProfile';
 import { useParams } from 'next/navigation';
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
 
 interface StoreInfo {
   id: number;
@@ -136,7 +137,12 @@ export default function StorePage() {
         setStoreInfo(data);
         setImageUrl(data.logoImageUrl);
         setIsStoreOpen(true);
-      } catch (error: any) {
+      } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
+
         console.error('가게 정보를 불러오는데 실패했습니다:', error);
         setIsStoreOpen(false);
         setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
@@ -162,6 +168,10 @@ export default function StorePage() {
           setCategories([]);
         }
       } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
         setCategories([]);
       }
     };
@@ -200,6 +210,10 @@ export default function StorePage() {
           setMenuItems([]);
         }
       } catch (error) {
+        if (error instanceof AxiosError && error.response && error.response.status === 401) {
+          router.push('/bizes/login');
+          return;
+        }
         console.error('메뉴를 불러오는데 실패했습니다:', error);
         setMenuItems([]);
       }

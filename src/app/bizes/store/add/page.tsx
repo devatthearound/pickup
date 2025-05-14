@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
 
 interface StoreFormData {
   name: string;
@@ -119,6 +120,10 @@ export default function StoreRegisterPage() {
       // 성공 시 스토어 목록 페이지로 이동
       router.push('/bizes');
     } catch (error) {
+      if (error instanceof AxiosError&& error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('스토어 등록 실패:', error);
       setError(error instanceof Error ? error.message : '스토어 등록 중 오류가 발생했습니다.');
     } finally {

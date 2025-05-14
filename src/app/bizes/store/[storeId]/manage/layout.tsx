@@ -1,6 +1,7 @@
 'use client';
 
 import { useAxios } from '@/hooks/useAxios';
+import { AxiosError } from 'axios';
 import Link from 'next/link';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -54,6 +55,10 @@ export default function StoreLayout({
       // 로그아웃 성공 시 로그인 페이지로 이동
       router.push('/bizes/login');
     } catch (error) {
+      if (error instanceof AxiosError && error.response && error.response.status === 401) {
+        router.push('/bizes/login');
+        return;
+      }
       console.error('로그아웃 실패:', error);
       alert('로그아웃에 실패했습니다. 다시 시도해주세요.');
     }

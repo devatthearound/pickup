@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { UserProvider } from "@/contexts/UserContext";
 import ClientLayout from "./ClientLayout";
 import Script from "next/script";
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <AuthProvider>
+      <UserProvider>
       <ClientLayout>
         <html lang="ko">
           <head>
@@ -79,6 +79,6 @@ export default function RootLayout({
           </body>
         </html>
       </ClientLayout>
-    </AuthProvider>
+      </UserProvider>
   );
 }
