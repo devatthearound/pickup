@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getCookie, setCookie, deleteCookie } from '@/lib/useCookie';
-// export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr';
-export const API_URL = 'http://localhost:3001';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.xn--5h5bx6z0e.kr';
+//export const API_URL = 'http://localhost:3001';
 // const API_URL = 'http://localhost:3001';
 export const useAxios = () => {
   const accessToken = getCookie('pu-atac');
